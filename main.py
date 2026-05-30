@@ -195,8 +195,71 @@ BASE_PHILOSOPHY = "أنتِ رويال مايند، العقل البرمجي و
 
 @app.get("/api/search")
 async def search(query: str):
-    return {"status": "error", "message": "قم برفع ملفات الـ CSV ليعمل البحث بنجاح."}
+    """
+    دالة البحث الملكية المحدثة والمصلحة 100% لقراءة ملفات المخازن
+    """
+    if not query:
+        return {"status": "success", "data": []}
+        
+    # جلب كافة ملفات الـ CSV المتوفرة في المجلد
+    csv_files = [f for f in os.listdir('.') if f.endswith('.csv') and f != 'requirements.txt']
+    
+    if not csv_files:
+        return {"status": "error", "message": "لم يتم العثور على ملفات قاعدة البيانات CSV في السيرفر."}
+        
+    results = []
+    query = query.lower().strip()
+    
+    for file_name in csv_files:
+        try:
+            # قراءة ملف الـ CSV بدعم كامل للغة العربية والترميز المتنوع
+            df = pd.read_csv(file_name, encoding='utf-8-sig', on_bad_lines='skip')
+            
+            # تنظيف أسماء الأعمدة من المسافات والأحرف الغريبة
+            df.columns = [str(c).strip() for c in df.columns]
+            
+            # التعرف على عمود اسم المنتج أو الصنف تلقائياً
+            name_col = next((col for col in df.columns if any(k in col.lower() for k in ['name', 'اسم', 'صنف', 'البيان', 'المنتج', 'item'])), None)
+            # التعرف على عمود السعر تلقائياً
+            price_col = next((col for col in df.columns if any(k in col.lower() for k in ['price', 'سعر', 'بيع', 'المستهلك', 'rate'])), None)
+            
+            if not name_col:
+                name_col = df.columns[0] # لو ملاقاش، ياخد أول عمود كافتراضي
+                
+            # تصفية الصفوف التي تحتوي على كلمة البحث (البحث مرن ومطاطي)
+            matched_df = df[df[name_col].astype(str).str.lower().str.contains(query, na=False)]
+            
+            for _, row in matched_df.head(20).iterrows():
+                item_name = str(row[name_col]).strip()
+                item_price = str(row[price_col]).strip() if price_col else "غير محدد"
+                
+                # جرد وفحص الكميات في الفروع بناءً على الكلمات الدلالية في الأعمدة
+                branches_info = {}
+                for col in df.columns:
+                    if col not in [name_col, price_col]:
+                        col_lower = col.lower()
+                        # كلمات دلالية للفروع والمخازن المشهورة عندك
+                        if any(k in col_lower or k in col for k in ['غردقة', 'مروة', 'أقصر', 'لوتس', 'اونلاين', 'مخزن', 'فرع', 'qty', 'stock', 'كمية', 'رصيد']):
+                            branches_info[col] = str(row[col]).strip()
+                
+                # لو ملاقاش أعمدة فروع صريحة، ياخد بقية الأعمدة المتاحة كبيانات مفيدة
+                if not branches_info:
+                    for col in df.columns[:6]:
+                        if col not in [name_col, price_col]:
+                            branches_info[col] = str(row[col]).strip()
 
+                # تنسيق نص الفروع بشكل جمالي ومريح للعين في الواجهة
+                branches_text = " | ".join([f"{k}: {v}" for k, v in branches_info.items()]) if branches_info else "متاح"
+
+                results.append({
+                    "name": f"{item_name} ({branches_text})",
+                    "price": item_price
+                })
+        except Exception as e:
+            print(f"خطأ أثناء قراءة ملف {file_name}: {str(e)}")
+            continue
+            
+    return {"status": "success", "data": results}
 @app.get("/api/vault")
 async def get_vault(phone: str):
     conn = sqlite3.connect(DB_PATH)
