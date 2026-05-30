@@ -107,7 +107,7 @@ TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
 
 def get_inventory():
     try:
-        file_path = "last.xls - Sheet1.csv"
+        file_path = "last.xls - Sheet1 (4).csv"
         if os.path.exists(file_path):
             return pd.read_csv(file_path).fillna("")
         return pd.DataFrame()
