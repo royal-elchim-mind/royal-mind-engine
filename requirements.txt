@@ -6,3 +6,4 @@ pandas
 mediapipe
 opencv-python-headless
 Pillow
+pymongo[srv]
