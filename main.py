@@ -16,13 +16,9 @@ import cv2
 import urllib.request
 from datetime import datetime
 
-# استدعاء مكتبة MongoDB للخزنة السحابية الأبدية
 import pymongo
 from pymongo import MongoClient
 
-# ---------------------------------------------------------
-# [استدعاء حواس المستقبل - MediaPipe Tasks API]
-# ---------------------------------------------------------
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -37,9 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================================================
-# [الباب الرئيسي]
-# =========================================================
 @app.get("/")
 def read_root():
     return {"status": "online", "message": "👑 Royal Mind Engine is running successfully on Cloud Vault!"}
@@ -60,6 +53,7 @@ if MONGO_URI:
     except Exception as e:
         print(f"خطأ في الاتصال بـ MongoDB: {e}")
 
+# 🎯 تطبيق سياستك الصارمة: النصوص لا تحذف، لكن نحتفظ بآخر 5 صور فقط
 def save_to_db(phone, record_type, text, selfie=None, product=None):
     if not phone or vault_collection is None: return
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -84,7 +78,7 @@ def save_to_db(phone, record_type, text, selfie=None, product=None):
     }
     vault_collection.insert_one(document)
 
-def get_history_from_db(phone, limit=5):
+def get_history_from_db(phone, limit=10):
     if not phone or vault_collection is None: return ""
     records = list(vault_collection.find({"phone": phone}).sort("date", -1).limit(limit))
     if not records: return ""
@@ -92,7 +86,7 @@ def get_history_from_db(phone, limit=5):
     return history
 
 # =========================================================
-# [الوعي البصري والموديلات - القوة الضاربة والاحتياطي]
+# [الوعي البصري والموديلات]
 # =========================================================
 TASK_FILE = 'face_landmarker.task'
 TASK_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
@@ -120,12 +114,12 @@ VISION_MODELS = ["gemini-3.5-pro", "gemini-3.5-flash", "gemini-2.5-pro", "gemini
 TEXT_MODELS = ["gemini-3.5-pro", "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
 
 # =========================================================
-# [قراءة الجرد والأرشيف السري للبراند]
+# [الذكاء في الفرز بين الجرد، والبراند الجاهز]
 # =========================================================
 def get_inventory():
     try:
-        csv_files = [f for f in os.listdir('.') if f.endswith('.csv') and ('last' in f.lower() or 'sheet1' in f.lower() or 'combined' in f.lower())]
-        file_path = csv_files[0] if csv_files else "combined_file.csv"
+        csv_files = [f for f in os.listdir('.') if f.endswith('.csv') and ('last' in f.lower() or 'sheet' in f.lower()) and 'ROYALELCHIMBRAND' not in f]
+        file_path = csv_files[0] if csv_files else "last.xls - Sheet1.csv"
         if os.path.exists(file_path):
             return pd.read_csv(file_path, encoding='utf-8-sig', on_bad_lines='skip').fillna("")
         return pd.DataFrame()
@@ -142,17 +136,29 @@ def get_links_db():
     except Exception as e:
         return pd.DataFrame()
 
-# 🎯 الدالة الملكية الجديدة لقراءة ملفات التكست (أرشيف العطور الجاهزة)
-def get_brand_recipes():
-    recipes = ""
+def get_brand_catalog():
+    catalog = ""
     try:
         for f in os.listdir('.'):
             if f.endswith('.txt') and 'requirements' not in f.lower():
                 with open(f, 'r', encoding='utf-8') as file:
-                    recipes += file.read() + "\n"
-        return recipes
+                    catalog += file.read() + "\n"
+        
+        brand_file = "ROYALELCHIMBRAND.xls.xlsx"
+        if os.path.exists(brand_file):
+            df = pd.read_excel(brand_file)
+            if 'الصنف' in df.columns:
+                ready_items = []
+                for _, row in df.head(135).iterrows():
+                    name = str(row.get('الصنف', '')).strip()
+                    if name and str(name).lower() != 'nan':
+                        ready_items.append(name)
+                if ready_items:
+                    catalog += "\n[قائمة عطور براند Royal Elchim الجاهزة في المعرض - للترشيح المباشر]:\n"
+                    catalog += "، ".join(ready_items) + "\n"
+        return catalog
     except Exception as e:
-        return ""
+        return catalog
 
 def robust_generate(client_api_key, contents, models_list):
     if client_api_key and client_api_key.strip():
@@ -184,9 +190,6 @@ def robust_generate(client_api_key, contents, models_list):
                         break
     raise HTTPException(status_code=503, detail=f"تعذر الاتصال بالذكاء الاصطناعي. الخطأ: {last_error}")
 
-# =========================================================
-# [هياكل البيانات]
-# =========================================================
 class DiagnosisPayload(BaseModel):
     client_message: str
     phone: str
@@ -225,9 +228,6 @@ class InvoiceItem(BaseModel):
 class InvoicePayload(BaseModel):
     items: List[InvoiceItem]
 
-# =========================================================
-# [معالجة الصور والمكياج بواقعية سينمائية]
-# =========================================================
 def hex_to_rgb(hex_color: str):
     if not hex_color: return (139, 0, 0)
     hex_color = hex_color.lstrip('#')
@@ -316,7 +316,8 @@ async def search(query: str):
     try:
         inv = get_inventory()
         db = get_links_db()
-        if inv.empty: return {"status": "error", "message": "قاعدة بيانات المعرض غير متوفرة."}
+        if inv.empty or 'الصنف' not in inv.columns: 
+            return {"status": "error", "message": "ملف قاعدة بيانات الجرد الحقيقي غير متوفر."}
 
         results = inv[
             inv['الصنف'].astype(str).str.contains(query, na=False, case=False, regex=False) | 
@@ -421,19 +422,37 @@ async def calculate_invoice(payload: InvoicePayload):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+# 🎯 تطبيق حماية الخصوصية المطلقة للسجلات
 @app.get("/api/vault")
 async def get_vault(phone: str):
     if vault_collection is None:
         return {"status": "error", "message": "قاعدة البيانات غير متصلة"}
+    
     records = list(vault_collection.find({"phone": phone}).sort("date", -1))
-    data = [{"type": r.get('type'), "text": r.get('text'), "selfie": r.get('selfie'), "product": r.get('product'), "date": r.get('date')} for r in records]
+    
+    data = []
+    for r in records:
+        if r.get('phone') == phone:
+            data.append({
+                "type": r.get('type'), 
+                "text": r.get('text'), 
+                "selfie": r.get('selfie'), 
+                "product": r.get('product'), 
+                "date": r.get('date')
+            })
+            
     return {"status": "success", "data": data}
 
 @app.post("/api/diagnose")
 async def diagnose(payload: DiagnosisPayload):
     history_context = get_history_from_db(payload.phone)
-    context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
-    prompt = f"{BASE_PHILOSOPHY}{context_str}\nجلسة حوار الصداقة والتحليل النفسي: '{payload.client_message}'"
+    psychological_profiler = (
+        f"بناءً على هذا التاريخ التراكمي للعميل: [{history_context}]، "
+        f"استنتجي بصمتك الوجدانية عنه. "
+        f"في ردك، ابدئي بلمسة شخصية تُشعره أنك تتذكرينه وتفهمين ذوقه."
+    ) if history_context else "هذا عميل جديد، استقبليه بحفاوة ملكية."
+
+    prompt = f"{BASE_PHILOSOPHY}\n\n{psychological_profiler}\n\nطلب العميل الآن: '{payload.client_message}'"
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
     save_to_db(payload.phone, "صداقة رويال مايند", f"الطلب: {payload.client_message}\n\nالرد: {res}")
     return {"status": "success", "diagnosis": res, "answer": res}
@@ -441,41 +460,15 @@ async def diagnose(payload: DiagnosisPayload):
 @app.post("/api/chat")
 async def chat(payload: ChatPayload):
     history_context = get_history_from_db(payload.phone)
-    context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
-    
-    if payload.category == 'perfume':
-        inv = get_inventory()
-        brand_catalog = get_brand_recipes()
-        catalog_str = f"\n[أرشيف عطور رويال إلكيم الجاهزة السابقة]:\n{brand_catalog}\n" if brand_catalog else ""
-        
-        available_oils = []
-        if not inv.empty:
-            oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
-            for _, row in oils_df.head(60).iterrows():
-                name = str(row.get('الصنف', '')).strip()
-                price = clean_qty_value(row.get('سعر1 كارت', 0))
-                if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
-        
-        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الزيوت غير متاحة حالياً."
-            
-        prompt = (
-            f"{BASE_PHILOSOPHY}{context_str}{catalog_str}\n"
-            f"أنتِ الآن 'خيميائية العطور' الخاصة ببراند Royal Elchim.\n"
-            f"طلب العميل: '{payload.text}'\n\n"
-            f"المهام المطلوبة:\n"
-            f"1. صممي تركيبة عطرية مخصصة للعميل لزجاجة 50 مل باستخدام الزيوت المتاحة حصراً: [\n{oils_list_text}\n].\n"
-            f"2. اربطي التركيبة ببرج فلكي وحيوان روحي يعكس شخصيته.\n"
-            f"3. احسبي تكلفة الزيوت المستخدمة (جرامات الزيت × سعرها)، وتكلفة المثبت (1 جرام لكل 5 جرام زيت بسعر 3 ج.م للجرام)، وتكلفة الكحول المتبقي (0.5 ج.م للجرام)، واعرضي إجمالي 'تكلفة الإكسير السائل'.\n"
-            f"4. **الترشيح من الأرشيف (هام جداً):** بناءً على طلب العميل وحالته النفسية، اختاري ورشحي له عطراً واحداً من [أرشيف عطور رويال إلكيم الجاهزة السابقة] (مثل Earth Rose أو Royal Eclipse إلخ)، واشرحي له لماذا هذا العطر الجاهز يناسب شخصيته أيضاً كبديل فوري.\n"
-            f"5. قدمي الرد بأسلوب راقٍ وساحر."
-        )
-        record_type = "استشارة وتركيب عطور ملكي"
-    else:
-        prompt = f"{BASE_PHILOSOPHY}{context_str}\nطلب العميل: '{payload.text}'"
-        record_type = "استشارة مكياج"
-        
+    psychological_profiler = (
+        f"بناءً على هذا التاريخ التراكمي للعميل: [{history_context}]، "
+        f"استنتجي بصمتك الوجدانية عنه. "
+        f"في ردك، ابدئي بلمسة شخصية تُشعره أنك تتذكرينه وتفهمين ذوقه."
+    ) if history_context else "هذا عميل جديد، استقبليه بحفاوة ملكية."
+
+    prompt = f"{BASE_PHILOSOPHY}\n\n{psychological_profiler}\n\nطلب العميل الآن: '{payload.text}'"
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
-    save_to_db(payload.phone, record_type, f"الطلب: {payload.text}\n\nالرد: {res}")
+    save_to_db(payload.phone, "استشارة مكياج", f"الطلب: {payload.text}\n\nالرد: {res}")
     return {"status": "success", "diagnosis": res, "answer": res}
 
 @app.post("/api/simulate_makeup")
@@ -496,18 +489,15 @@ async def simulate_makeup(payload: SimulationPayload):
             result_base64 = payload.user_selfie
 
         history_context = get_history_from_db(payload.phone)
-        context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
-        
         makeup_names_ar = {"lips": "أحمر الشفاه", "eyeshadow": "ظلال العيون", "blush": "أحمر الخدود", "concealer": "الكونسيلر", "foundation": "كريم الأساس", "highlighter": "الهايلايتر"}
         makeup_name = makeup_names_ar.get(payload.makeup_type, "المكياج")
         product_info = payload.product_name_desc if payload.product_name_desc else 'منتج جمالي'
         
-        expert_prompt = f"{BASE_PHILOSOPHY}{context_str}\nالعميلة قامت بتجربة لـ '{makeup_name}' ({product_info}). حللي كيف اندمج اللون مع ملامحها وقدمي نصيحة احترافية."
+        expert_prompt = f"{BASE_PHILOSOPHY}\nالتاريخ التراكمي: [{history_context}]\nالعميلة قامت بتجربة لـ '{makeup_name}' ({product_info}). حللي كيف اندمج اللون مع ملامحها وقدمي نصيحة احترافية تشعرها أنك تفهمين شخصيتها."
         contents = [Image.open(io.BytesIO(base64.b64decode(result_base64.split(",")[1]))), expert_prompt]
                 
         res = robust_generate(payload.client_api_key, contents, VISION_MODELS)
-        record_type = f"محاكاة {makeup_name}"
-        save_to_db(payload.phone, record_type, res, payload.user_selfie, payload.product_image)
+        save_to_db(payload.phone, f"محاكاة {makeup_name}", res, result_base64, payload.product_image)
 
         return {"status": "success", "result_image": result_base64, "simulation_result": res, "face_detected": face_found}
     except Exception as e:
@@ -517,32 +507,34 @@ async def simulate_makeup(payload: SimulationPayload):
 async def craft_perfume(payload: PerfumeCraftPayload):
     try:
         inv = get_inventory()
-        brand_catalog = get_brand_recipes()
-        catalog_str = f"\n[أرشيف عطور رويال إلكيم الجاهزة السابقة]:\n{brand_catalog}\n" if brand_catalog else ""
+        brand_catalog = get_brand_catalog()
         
         available_oils = []
-        if not inv.empty:
+        if not inv.empty and 'الصنف' in inv.columns:
             oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
             for _, row in oils_df.head(60).iterrows():
                 name = str(row.get('الصنف', '')).strip()
-                price = clean_qty_value(row.get('سعر1 كارت', 0))
+                price = clean_qty_value(row.get('سعر1 كارت', 0)) if 'سعر1 كارت' in row else 0
                 if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
         
-        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الزيوت غير متاحة حالياً."
+        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الأسعار قيد التحديث."
 
         history_context = get_history_from_db(payload.phone)
-        context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
         
         perfume_prompt = (
-            f"{BASE_PHILOSOPHY}{context_str}{catalog_str}\n"
-            f"أنتِ الآن 'خيميائية العطور' الخاصة ببراند Royal Elchim.\n"
+            f"{BASE_PHILOSOPHY}\n"
+            f"التاريخ التراكمي للعميل: [{history_context}]\n"
             f"رسالة العميل: '{payload.client_message}'\n\n"
-            f"المهام المطلوبة:\n"
-            f"1. صممي تركيبة عطرية لزجاجة 50 مل باستخدام الزيوت المتاحة حصراً بأسعارها: [\n{oils_list_text}\n].\n"
-            f"2. اربطي التركيبة ببرج فلكي وحيوان روحي.\n"
-            f"3. احسبي تكلفة الزيوت، والمثبت (1 جم لكل 5 جم زيت بسعر 3 ج.م للجرام)، والكحول المتبقي (0.5 ج.م للجرام). واعرضي 'إجمالي تكلفة الإكسير السائل'.\n"
-            f"4. **الترشيح من الأرشيف (هام جداً):** بناءً على رسالة العميل، راجعي [أرشيف عطور رويال إلكيم الجاهزة السابقة] المرفق واختاري ورشحي له عطراً واحداً من إصداراتنا الجاهزة (مثل Royal Velvet Rose أو Royal Black إلخ) كبديل متوفر، مع ذكر سبب اختياره له خصيصاً.\n"
-            f"5. قدمي الرد بأسلوب راقٍ، شفاف، وساحر."
+            f"--- القوائم المتاحة للاستخدام ---\n"
+            f"1. [زيوت التركيب الخام بأسعارها - تُستخدم للتركيب فقط]:\n{oils_list_text}\n\n"
+            f"2. [أرشيف عطور Royal Elchim الجاهزة في المعرض - تُستخدم للترشيح الجاهز فقط]:\n{brand_catalog}\n"
+            f"----------------------------------\n\n"
+            f"المهام المطلوبة بصرامة:\n"
+            f"1. **(الملف النفسي):** استنتجي بصمته الوجدانية من كلامه وتاريخه، وصارحيه بها بلطف، مع الإشارة دائماً لقاعدة عطرنا الأساسي ROYAL E.K.A.\n"
+            f"2. **(تصميم التركيبة الخاصة):** صممي تركيبة لزجاجة 50 مل باستخدام [زيوت التركيب الخام] فقط. ابتكري اسماً خيالياً يعبر عن شخصيته، واربطيها ببرج فلكي وحيوان روحي.\n"
+            f"3. **(الحساب المالي للإكسير):** احسبي 'إجمالي تكلفة الإكسير السائل' (الزيوت × أسعارها + 1جم مثبت لكل 5جم زيت بسعر 3 ج.م + كحول بسعر 0.5 ج.م للجرام).\n"
+            f"4. **(الترشيح الإجباري للجاهز - تحذير هام جداً):** يُمنع منعاً باتاً ترشيح أي زيت خام من القائمة الأولى كعطر جاهز. يجب أن يكون ترشيحك للعطر الجاهز مأخوذاً حصرياً وبالنص من [أرشيف عطور Royal Elchim الجاهزة]. اشرحي بأسلوب تسويقي راقٍ لماذا هذا العطر من إنتاجنا يناسب شخصيته كبديل فوري للشراء.\n"
+            f"5. كوني كائناً حياً صديقاً، وليس مجرد آلة."
         )
 
         res = robust_generate(payload.client_api_key, [perfume_prompt], TEXT_MODELS)
@@ -550,6 +542,7 @@ async def craft_perfume(payload: PerfumeCraftPayload):
         
         return {"status": "success", "answer": res, "diagnosis": res}
     except Exception as e:
+        print(f"Craft Perfume Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
