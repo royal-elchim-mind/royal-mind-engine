@@ -64,7 +64,6 @@ def save_to_db(phone, record_type, text, selfie=None, product=None):
     if not phone or vault_collection is None: return
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # حد أقصى 5 صور للحفاظ على كفاءة الذاكرة
     if selfie:
         existing_selfies = list(vault_collection.find(
             {"phone": phone, "selfie": {"$ne": None}}
@@ -117,31 +116,16 @@ face_landmarker = vision.FaceLandmarker.create_from_options(options)
 keys_string = os.environ.get("GOOGLE_API_KEY", os.environ.get("GOOGLE_API_KEYS", ""))
 SYSTEM_API_KEYS = [key.strip() for key in keys_string.split(",") if key.strip()]
 
-VISION_MODELS = [
-    "gemini-3.5-pro", 
-    "gemini-3.5-flash", 
-    "gemini-2.5-pro", 
-    "gemini-2.5-flash", 
-    "gemini-1.5-pro", 
-    "gemini-1.5-flash"
-]
-
-TEXT_MODELS = [
-    "gemini-3.5-pro", 
-    "gemini-3.5-flash", 
-    "gemini-2.5-pro", 
-    "gemini-2.5-flash", 
-    "gemini-1.5-pro", 
-    "gemini-1.5-flash"
-]
+VISION_MODELS = ["gemini-3.5-pro", "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
+TEXT_MODELS = ["gemini-3.5-pro", "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
 
 # =========================================================
-# [جلب الملفات بمرونة]
+# [قراءة الجرد والأرشيف السري للبراند]
 # =========================================================
 def get_inventory():
     try:
-        csv_files = [f for f in os.listdir('.') if f.endswith('.csv') and ('last' in f.lower() or 'sheet1' in f.lower())]
-        file_path = csv_files[0] if csv_files else "last.xls - Sheet1.csv"
+        csv_files = [f for f in os.listdir('.') if f.endswith('.csv') and ('last' in f.lower() or 'sheet1' in f.lower() or 'combined' in f.lower())]
+        file_path = csv_files[0] if csv_files else "combined_file.csv"
         if os.path.exists(file_path):
             return pd.read_csv(file_path, encoding='utf-8-sig', on_bad_lines='skip').fillna("")
         return pd.DataFrame()
@@ -157,6 +141,18 @@ def get_links_db():
         return pd.DataFrame()
     except Exception as e:
         return pd.DataFrame()
+
+# 🎯 الدالة الملكية الجديدة لقراءة ملفات التكست (أرشيف العطور الجاهزة)
+def get_brand_recipes():
+    recipes = ""
+    try:
+        for f in os.listdir('.'):
+            if f.endswith('.txt') and 'requirements' not in f.lower():
+                with open(f, 'r', encoding='utf-8') as file:
+                    recipes += file.read() + "\n"
+        return recipes
+    except Exception as e:
+        return ""
 
 def robust_generate(client_api_key, contents, models_list):
     if client_api_key and client_api_key.strip():
@@ -230,7 +226,7 @@ class InvoicePayload(BaseModel):
     items: List[InvoiceItem]
 
 # =========================================================
-# [معالجة الصور والمكياج بواقعية سينمائية فائقة]
+# [معالجة الصور والمكياج بواقعية سينمائية]
 # =========================================================
 def hex_to_rgb(hex_color: str):
     if not hex_color: return (139, 0, 0)
@@ -252,19 +248,9 @@ def apply_royal_makeup(image_cv: np.ndarray, color_rgb: tuple, makeup_type: str)
 
         ZONES = {
             "lips": [[61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95, 185]],
-            "eyeshadow": [
-                [33, 246, 161, 160, 159, 158, 157, 173, 133], 
-                [362, 398, 384, 385, 386, 387, 388, 466, 263] 
-            ],
-            "blush": [
-                [116, 117, 118, 119, 100, 120, 121, 147, 213, 192, 214, 210, 211, 32, 208, 199], 
-                [345, 346, 347, 348, 329, 350, 351, 376, 433, 416, 434, 430, 431, 262, 428, 420] 
-            ],
-            "highlighter": [
-                [116, 117, 118, 119, 147, 213], # خد أيسر
-                [345, 346, 347, 348, 376, 433], # خد أيمن
-                [197, 195, 5, 4] # أرنبة الأنف
-            ],
+            "eyeshadow": [[33, 246, 161, 160, 159, 158, 157, 173, 133], [362, 398, 384, 385, 386, 387, 388, 466, 263]],
+            "blush": [[116, 117, 118, 119, 100, 120, 121, 147, 213, 192, 214, 210, 211, 32, 208, 199], [345, 346, 347, 348, 329, 350, 351, 376, 433, 416, 434, 430, 431, 262, 428, 420]],
+            "highlighter": [[116, 117, 118, 119, 147, 213], [345, 346, 347, 348, 376, 433], [197, 195, 5, 4]],
             "foundation": [[10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109]]
         }
 
@@ -276,7 +262,6 @@ def apply_royal_makeup(image_cv: np.ndarray, color_rgb: tuple, makeup_type: str)
             points = np.array([ [int(face_landmarks[idx].x * width), int(face_landmarks[idx].y * height)] for idx in zone ], dtype=np.int32)
             cv2.fillPoly(mask, [points], 255)
 
-        # نعومة الماسك حسب نوع المكياج
         blur_radius = (45, 45) if makeup_type in ["blush", "foundation"] else (21, 21)
         mask = cv2.GaussianBlur(mask, blur_radius, 0)
         
@@ -286,18 +271,13 @@ def apply_royal_makeup(image_cv: np.ndarray, color_rgb: tuple, makeup_type: str)
         color_layer = np.zeros_like(image_cv)
         color_layer[:] = color_rgb[::-1]
 
-        # خوارزميات الدمج الواقعية
         if makeup_type == "foundation":
-            # تنعيم مسام البشرة أولاً
             smooth_skin = cv2.bilateralFilter(image_cv, 15, 75, 75)
-            # دمج لون الأساس مع البشرة الناعمة
             blended_layer = cv2.addWeighted(smooth_skin, 0.7, color_layer, 0.3, 0)
         elif makeup_type == "highlighter":
-            # دمج مضيء للهايلايتر
             blended_layer = cv2.add(image_cv, color_layer)
             blended_layer = cv2.addWeighted(image_cv, 0.5, blended_layer, 0.5, 0)
         else:
-            # Multiply Blend للشفاه والآيشادو والبلاشر لاحتفاظ واقعي بالظلال
             image_float = image_cv.astype(np.float32)
             color_float = color_layer.astype(np.float32)
             multiply_blend = (image_float * color_float) / 255.0
@@ -311,9 +291,6 @@ def apply_royal_makeup(image_cv: np.ndarray, color_rgb: tuple, makeup_type: str)
 
 BASE_PHILOSOPHY = "أنتِ رويال مايند، العقل البرمجي والوجداني لبراند Royal Elchim الجمالي المتكامل."
 
-# =========================================================
-# [البحث الذكي والجرد والتنظيف]
-# =========================================================
 def sanitize_value(val, default_text="---"):
     if val is None: return default_text
     s = str(val).strip()
@@ -407,9 +384,6 @@ async def search(query: str):
     except Exception as e:
         return {"status": "error", "message": f"خطأ داخلي: {str(e)}"}
 
-# =========================================================
-# [النقاط النهائية للذاكرة والذكاء الاصطناعي]
-# =========================================================
 @app.post("/api/invoice/calculate")
 async def calculate_invoice(payload: InvoicePayload):
     try:
@@ -420,22 +394,18 @@ async def calculate_invoice(payload: InvoicePayload):
         target_tier = 1
         tier_name = "قطاعي"
         if initial_total >= 30000:
-            target_tier = 4
-            tier_name = "جملة كبار العملاء الملكي (السعر الرابع)"
+            target_tier = 4; tier_name = "جملة كبار العملاء الملكي (السعر الرابع)"
         elif initial_total >= 15000:
-            target_tier = 3
-            tier_name = "جملة خاصة"
+            target_tier = 3; tier_name = "جملة خاصة"
         elif initial_total >= 5000:
-            target_tier = 2
-            tier_name = "جملة عادية"
+            target_tier = 2; tier_name = "جملة عادية"
 
         final_items = []
         final_invoice_total = 0
 
         for item in payload.items:
             if item.is_fixed_price:
-                actual_price = item.price_card_1
-                is_protected = True
+                actual_price = item.price_card_1; is_protected = True
             else:
                 if target_tier == 1: actual_price = item.price_card_1
                 elif target_tier == 2: actual_price = item.price_card_2
@@ -445,24 +415,9 @@ async def calculate_invoice(payload: InvoicePayload):
 
             item_total = actual_price * item.qty
             final_invoice_total += item_total
+            final_items.append({"barcode": item.barcode, "name": item.name, "qty": item.qty, "applied_price": actual_price, "is_protected": is_protected, "total": item_total})
 
-            final_items.append({
-                "barcode": item.barcode,
-                "name": item.name,
-                "qty": item.qty,
-                "applied_price": actual_price,
-                "is_protected": is_protected,
-                "total": item_total
-            })
-
-        return {
-            "status": "success",
-            "initial_total": initial_total,
-            "final_total": final_invoice_total,
-            "applied_tier": target_tier,
-            "tier_name": tier_name,
-            "items": final_items
-        }
+        return {"status": "success", "initial_total": initial_total, "final_total": final_invoice_total, "applied_tier": target_tier, "tier_name": tier_name, "items": final_items}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -479,22 +434,48 @@ async def diagnose(payload: DiagnosisPayload):
     history_context = get_history_from_db(payload.phone)
     context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
     prompt = f"{BASE_PHILOSOPHY}{context_str}\nجلسة حوار الصداقة والتحليل النفسي: '{payload.client_message}'"
-    
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
     save_to_db(payload.phone, "صداقة رويال مايند", f"الطلب: {payload.client_message}\n\nالرد: {res}")
-    
     return {"status": "success", "diagnosis": res, "answer": res}
 
 @app.post("/api/chat")
 async def chat(payload: ChatPayload):
     history_context = get_history_from_db(payload.phone)
     context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
-    prompt = f"{BASE_PHILOSOPHY}{context_str}\nطلب العميل: '{payload.text}'"
     
+    if payload.category == 'perfume':
+        inv = get_inventory()
+        brand_catalog = get_brand_recipes()
+        catalog_str = f"\n[أرشيف عطور رويال إلكيم الجاهزة السابقة]:\n{brand_catalog}\n" if brand_catalog else ""
+        
+        available_oils = []
+        if not inv.empty:
+            oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
+            for _, row in oils_df.head(60).iterrows():
+                name = str(row.get('الصنف', '')).strip()
+                price = clean_qty_value(row.get('سعر1 كارت', 0))
+                if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
+        
+        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الزيوت غير متاحة حالياً."
+            
+        prompt = (
+            f"{BASE_PHILOSOPHY}{context_str}{catalog_str}\n"
+            f"أنتِ الآن 'خيميائية العطور' الخاصة ببراند Royal Elchim.\n"
+            f"طلب العميل: '{payload.text}'\n\n"
+            f"المهام المطلوبة:\n"
+            f"1. صممي تركيبة عطرية مخصصة للعميل لزجاجة 50 مل باستخدام الزيوت المتاحة حصراً: [\n{oils_list_text}\n].\n"
+            f"2. اربطي التركيبة ببرج فلكي وحيوان روحي يعكس شخصيته.\n"
+            f"3. احسبي تكلفة الزيوت المستخدمة (جرامات الزيت × سعرها)، وتكلفة المثبت (1 جرام لكل 5 جرام زيت بسعر 3 ج.م للجرام)، وتكلفة الكحول المتبقي (0.5 ج.م للجرام)، واعرضي إجمالي 'تكلفة الإكسير السائل'.\n"
+            f"4. **الترشيح من الأرشيف (هام جداً):** بناءً على طلب العميل وحالته النفسية، اختاري ورشحي له عطراً واحداً من [أرشيف عطور رويال إلكيم الجاهزة السابقة] (مثل Earth Rose أو Royal Eclipse إلخ)، واشرحي له لماذا هذا العطر الجاهز يناسب شخصيته أيضاً كبديل فوري.\n"
+            f"5. قدمي الرد بأسلوب راقٍ وساحر."
+        )
+        record_type = "استشارة وتركيب عطور ملكي"
+    else:
+        prompt = f"{BASE_PHILOSOPHY}{context_str}\nطلب العميل: '{payload.text}'"
+        record_type = "استشارة مكياج"
+        
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
-    record_type = "استشارة عطور" if payload.category == 'perfume' else "استشارة مكياج"
     save_to_db(payload.phone, record_type, f"الطلب: {payload.text}\n\nالرد: {res}")
-    
     return {"status": "success", "diagnosis": res, "answer": res}
 
 @app.post("/api/simulate_makeup")
@@ -517,37 +498,18 @@ async def simulate_makeup(payload: SimulationPayload):
         history_context = get_history_from_db(payload.phone)
         context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
         
-        makeup_names_ar = {
-            "lips": "أحمر الشفاه",
-            "eyeshadow": "ظلال العيون (الآيشادو)",
-            "blush": "أحمر الخدود (البلاشر)",
-            "concealer": "الكونسيلر",
-            "foundation": "كريم الأساس",
-            "highlighter": "الهايلايتر اللامع"
-        }
+        makeup_names_ar = {"lips": "أحمر الشفاه", "eyeshadow": "ظلال العيون", "blush": "أحمر الخدود", "concealer": "الكونسيلر", "foundation": "كريم الأساس", "highlighter": "الهايلايتر"}
         makeup_name = makeup_names_ar.get(payload.makeup_type, "المكياج")
         product_info = payload.product_name_desc if payload.product_name_desc else 'منتج جمالي'
         
-        expert_prompt = (
-            f"{BASE_PHILOSOPHY}{context_str}\n"
-            f"العميلة قامت الآن بتجربة افتراضية لـ '{makeup_name}' "
-            f"(المنتج: {product_info}).\n"
-            f"بصفتكِ خبيرة تجميل عالمية، حللي كيف اندمج هذا الـ {makeup_name} "
-            f"مع ملامحها في هذه الصورة. أعطِها نصيحة احترافية مخصصة بناءً على التجربة المرئية."
-        )
-        
+        expert_prompt = f"{BASE_PHILOSOPHY}{context_str}\nالعميلة قامت بتجربة لـ '{makeup_name}' ({product_info}). حللي كيف اندمج اللون مع ملامحها وقدمي نصيحة احترافية."
         contents = [Image.open(io.BytesIO(base64.b64decode(result_base64.split(",")[1]))), expert_prompt]
                 
         res = robust_generate(payload.client_api_key, contents, VISION_MODELS)
         record_type = f"محاكاة {makeup_name}"
         save_to_db(payload.phone, record_type, res, payload.user_selfie, payload.product_image)
 
-        return {
-            "status": "success",
-            "result_image": result_base64,
-            "simulation_result": res,
-            "face_detected": face_found
-        }
+        return {"status": "success", "result_image": result_base64, "simulation_result": res, "face_detected": face_found}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -555,44 +517,36 @@ async def simulate_makeup(payload: SimulationPayload):
 async def craft_perfume(payload: PerfumeCraftPayload):
     try:
         inv = get_inventory()
+        brand_catalog = get_brand_recipes()
+        catalog_str = f"\n[أرشيف عطور رويال إلكيم الجاهزة السابقة]:\n{brand_catalog}\n" if brand_catalog else ""
+        
+        available_oils = []
         if not inv.empty:
-            # 1. فلترة الزيوت لسحب SAVVY و PARFUME OIL
             oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
-            
-            # 2. السحر المحاسبي: سحب اسم الزيت مع سعره الفعلي من الجرد
-            available_oils = []
-            for _, row in oils_df.head(60).iterrows(): # سحب أول 60 زيت كخيارات
+            for _, row in oils_df.head(60).iterrows():
                 name = str(row.get('الصنف', '')).strip()
-                price = clean_qty_value(row.get('سعر1 كارت', 0)) # سحب السعر الافتراضي
-                if price > 0:
-                    available_oils.append(f"{name} (السعر: {price} ج.م للجرام/الوحدة)")
-            
-            oils_list_text = " \n ".join(available_oils)
-        else:
-            oils_list_text = "قاعدة الزيوت غير متاحة حالياً."
+                price = clean_qty_value(row.get('سعر1 كارت', 0))
+                if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
+        
+        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الزيوت غير متاحة حالياً."
 
         history_context = get_history_from_db(payload.phone)
         context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
         
-        # 3. البرومبت المحاسبي والخيميائي الشامل
         perfume_prompt = (
-            f"{BASE_PHILOSOPHY}{context_str}\n"
+            f"{BASE_PHILOSOPHY}{context_str}{catalog_str}\n"
             f"أنتِ الآن 'خيميائية العطور' الخاصة ببراند Royal Elchim.\n"
             f"رسالة العميل: '{payload.client_message}'\n\n"
-            f"المهام المطلوبة منكِ بصرامة:\n"
-            f"1. اختاري مزيجاً سحرياً لزجاجة عطر بحجم 50 مل، من هذه الزيوت المتاحة بأسعارها حصراً: [\n{oils_list_text}\n].\n"
+            f"المهام المطلوبة:\n"
+            f"1. صممي تركيبة عطرية لزجاجة 50 مل باستخدام الزيوت المتاحة حصراً بأسعارها: [\n{oils_list_text}\n].\n"
             f"2. اربطي التركيبة ببرج فلكي وحيوان روحي.\n"
-            f"3. سمي العطر، مع ذكر قاعدة العطر ROYAL E.K.A.\n"
-            f"4. الحسابات المالية (مهم جداً):\n"
-            f"   - حددي عدد جرامات كل زيت عِطري مستخدم (مثلاً إجمالي الزيت 15 جرام) واضربي كل زيت في سعره المرفق.\n"
-            f"   - احسبي كمية المثبت: (1 جرام مثبت لكل 5 جرام زيت عطري). افترضي سعر جرام المثبت 3 ج.م.\n"
-            f"   - احسبي كمية الكحول المتبقية لملء الزجاجة. افترضي سعر جرام الكحول 0.5 ج.م.\n"
-            f"   - اجمعي التكلفة الإجمالية (الزيوت + المثبت + الكحول) واعرضيها للعميل بشفافية كـ 'تكلفة الإكسير السائل (بدون الزجاجة)'.\n"
-            f"5. قدمي الرد بأسلوب فني، راقي، وشفاف."
+            f"3. احسبي تكلفة الزيوت، والمثبت (1 جم لكل 5 جم زيت بسعر 3 ج.م للجرام)، والكحول المتبقي (0.5 ج.م للجرام). واعرضي 'إجمالي تكلفة الإكسير السائل'.\n"
+            f"4. **الترشيح من الأرشيف (هام جداً):** بناءً على رسالة العميل، راجعي [أرشيف عطور رويال إلكيم الجاهزة السابقة] المرفق واختاري ورشحي له عطراً واحداً من إصداراتنا الجاهزة (مثل Royal Velvet Rose أو Royal Black إلخ) كبديل متوفر، مع ذكر سبب اختياره له خصيصاً.\n"
+            f"5. قدمي الرد بأسلوب راقٍ، شفاف، وساحر."
         )
 
         res = robust_generate(payload.client_api_key, [perfume_prompt], TEXT_MODELS)
-        save_to_db(payload.phone, "تصميم عطر ملكي محاسبي", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
+        save_to_db(payload.phone, "تصميم عطر ملكي شامل", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
         
         return {"status": "success", "answer": res, "diagnosis": res}
     except Exception as e:
