@@ -132,6 +132,7 @@ def robust_generate(client_api_key, contents, models_list):
         keys_to_use = SYSTEM_API_KEYS.copy()
         random.shuffle(keys_to_use)
 
+    last_error = ""
     for model_name in models_list:
         for key in keys_to_use:
             max_retries = 2
@@ -144,13 +145,16 @@ def robust_generate(client_api_key, contents, models_list):
                         return response.text
                 except Exception as e:
                     error_str = str(e)
+                    last_error = error_str
+                    print(f"👑 Royal Mind Gemini API Error ({model_name}): {error_str}") # السطر ده هيكشف المستور في الـ Logs
                     if "503" in error_str or "ResourceExhausted" in error_str or "429" in error_str:
                         time.sleep(1.5)
                         continue
                     else:
                         break
-    raise HTTPException(status_code=503, detail="قنوات رويال مايند ممتلئة حالياً، يرجى إعادة المحاولة بعد ثوانٍ.")
-
+                        
+    # هنعرض الخطأ التقني الحقيقي هنا عشان نعرف نعالجه فوراً
+    raise HTTPException(status_code=503, detail=f"تعذر الاتصال بالذكاء الاصطناعي. الخطأ التقني: {last_error}")
 class DiagnosisPayload(BaseModel):
     client_message: str
     phone: str
