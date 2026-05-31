@@ -556,28 +556,43 @@ async def craft_perfume(payload: PerfumeCraftPayload):
     try:
         inv = get_inventory()
         if not inv.empty:
+            # 1. فلترة الزيوت لسحب SAVVY و PARFUME OIL
             oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
-            available_oils = oils_df['الصنف'].head(40).tolist()
-            oils_list_text = "، ".join([str(x) for x in available_oils])
+            
+            # 2. السحر المحاسبي: سحب اسم الزيت مع سعره الفعلي من الجرد
+            available_oils = []
+            for _, row in oils_df.head(60).iterrows(): # سحب أول 60 زيت كخيارات
+                name = str(row.get('الصنف', '')).strip()
+                price = clean_qty_value(row.get('سعر1 كارت', 0)) # سحب السعر الافتراضي
+                if price > 0:
+                    available_oils.append(f"{name} (السعر: {price} ج.م للجرام/الوحدة)")
+            
+            oils_list_text = " \n ".join(available_oils)
         else:
             oils_list_text = "قاعدة الزيوت غير متاحة حالياً."
 
         history_context = get_history_from_db(payload.phone)
         context_str = f"\n[الذاكرة التراكمية للعميل - رقم {payload.phone}]: {history_context}" if history_context else ""
         
+        # 3. البرومبت المحاسبي والخيميائي الشامل
         perfume_prompt = (
             f"{BASE_PHILOSOPHY}{context_str}\n"
             f"أنتِ الآن 'خيميائية العطور' الخاصة ببراند Royal Elchim.\n"
             f"رسالة العميل: '{payload.client_message}'\n\n"
-            f"المهام:\n"
-            f"1. اختاري مزيجاً سحرياً من هذه الزيوت المتاحة في مخازننا حصراً: [{oils_list_text}].\n"
-            f"2. اربطي هذه التركيبة بشكل إبداعي بأحد الأبراج (خاصة العذراء، الجوزاء، أو الحوت) وحيوان روحي (مثل الصقر أو الدولفين) ليعكس شخصية العميل.\n"
-            f"3. اقترحي اسماً راقياً، وتأكدي دائماً عند الإشارة لعطرنا الأساسي أن يكتب هكذا: ROYAL E.K.A.\n"
-            f"4. قدمي نسب الخلط التقريبية بأسلوب فني ساحر."
+            f"المهام المطلوبة منكِ بصرامة:\n"
+            f"1. اختاري مزيجاً سحرياً لزجاجة عطر بحجم 50 مل، من هذه الزيوت المتاحة بأسعارها حصراً: [\n{oils_list_text}\n].\n"
+            f"2. اربطي التركيبة ببرج فلكي وحيوان روحي.\n"
+            f"3. سمي العطر، مع ذكر قاعدة العطر ROYAL E.K.A.\n"
+            f"4. الحسابات المالية (مهم جداً):\n"
+            f"   - حددي عدد جرامات كل زيت عِطري مستخدم (مثلاً إجمالي الزيت 15 جرام) واضربي كل زيت في سعره المرفق.\n"
+            f"   - احسبي كمية المثبت: (1 جرام مثبت لكل 5 جرام زيت عطري). افترضي سعر جرام المثبت 3 ج.م.\n"
+            f"   - احسبي كمية الكحول المتبقية لملء الزجاجة. افترضي سعر جرام الكحول 0.5 ج.م.\n"
+            f"   - اجمعي التكلفة الإجمالية (الزيوت + المثبت + الكحول) واعرضيها للعميل بشفافية كـ 'تكلفة الإكسير السائل (بدون الزجاجة)'.\n"
+            f"5. قدمي الرد بأسلوب فني، راقي، وشفاف."
         )
 
         res = robust_generate(payload.client_api_key, [perfume_prompt], TEXT_MODELS)
-        save_to_db(payload.phone, "تصميم عطر ملكي", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
+        save_to_db(payload.phone, "تصميم عطر ملكي محاسبي", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
         
         return {"status": "success", "answer": res, "diagnosis": res}
     except Exception as e:
