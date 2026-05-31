@@ -289,10 +289,12 @@ async def search(query: str):
         for _, row in results.iterrows():
             item_name = str(row.get('الصنف', '')).strip()
             is_oil = any(kw in item_name.lower() for kw in ["زيت", "جرام", "تركيب", "كحول", "مثبت"])
-            qty_luxor_lotus = get_qty_by_keyword(row, ['اللوتس'])
-            qty_marrowa = get_qty_by_keyword(row, ['المروة'])
-            qty_hurgada = get_qty_by_keyword(row, ['HURGADA', 'الغردقة'])
-            qty_online = get_qty_by_keyword(row, ['اونلاين', 'online'])
+            
+            # 1. التقاط الكميات بمرونة وذكاء وتخطي أي أخطاء إملائية في الإكسيل
+            qty_luxor_lotus = get_qty_by_keyword(row, ['اللوتس', 'لوتس', 'اقصر', 'أقصر', 'luxor'])
+            qty_marrowa = get_qty_by_keyword(row, ['المروة', 'المروه', 'مروة', 'مروه', 'marwa'])
+            qty_hurgada = get_qty_by_keyword(row, ['الغردقة', 'الغردقه', 'غردقة', 'غردقه', 'hurgada', 'hurghada'])
+            qty_online = get_qty_by_keyword(row, ['اونلاين', 'online', 'أونلاين', 'مخزن'])
 
             price_1 = clean_qty_value(row.get('سعر1 كارت', 0))
             price_2 = clean_qty_value(row.get('سعر2 كارت', price_1 * 0.9))
@@ -300,9 +302,6 @@ async def search(query: str):
             price_4 = clean_qty_value(row.get('سعر4 كارت', price_1 * 0.8))
 
             is_fixed = any(kw in item_name for kw in ["ثابت", "محمي", "صافي"])
-
-            link = "https://www.royalelchim.app"
-            show_link_trigger = False
 
             if is_oil:
                 luxor_lotus_final = 0
@@ -312,12 +311,25 @@ async def search(query: str):
                 luxor_lotus_final = int(qty_luxor_lotus)
                 marrowa_final = int(qty_marrowa)
                 hurgada_final = int(qty_hurgada)
-                link_match = db[db['Product_Name'].astype(str).str.contains(item_name, na=False, case=False, regex=False)] if not db.empty else pd.DataFrame()
-                link = link_match['Product_Link'].values[0] if not link_match.empty else "https://www.royalelchim.app"
-                show_link_trigger = True if qty_online > 0 else False
+
+            # 2. إطلاق سراح الروابط: يظهر الرابط فوراً لو موجود في القاعدة أياً كانت الكمية
+            link = "https://www.royalelchim.app"
+            show_link_trigger = False
+            
+            if not db.empty:
+                link_match = db[db['Product_Name'].astype(str).str.contains(item_name, na=False, case=False, regex=False)]
+                if not link_match.empty:
+                    extracted_link = str(link_match['Product_Link'].values[0]).strip()
+                    if extracted_link and extracted_link.startswith("http"):
+                        link = extracted_link
+                        show_link_trigger = True
+
+            # 3. تجميع المخازن الـ 4 لتعرض بوضوح إجباري بجوار الاسم
+            branches_text = f"المروة: {marrowa_final} | الغردقة: {hurgada_final} | الأقصر: {luxor_lotus_final} | أونلاين: {int(qty_online)}"
+            full_name_with_branches = f"{item_name} [{branches_text}]"
 
             data.append({
-                "name": item_name,
+                "name": full_name_with_branches,
                 "price": price_1,
                 "price_card_1": price_1,
                 "price_card_2": price_2,
@@ -325,7 +337,7 @@ async def search(query: str):
                 "price_card_4": price_4,
                 "is_fixed_price": is_fixed,
                 "barcode": sanitize_value(row.get('الباركود'), "---"),
-                "link": sanitize_value(link, "https://www.royalelchim.app"),
+                "link": link,
                 "is_oil": is_oil,
                 "show_link": show_link_trigger,
                 "luxor_lotus_qty": luxor_lotus_final,
@@ -336,7 +348,6 @@ async def search(query: str):
         return {"status": "success", "data": data}
     except Exception as e:
         return {"status": "error", "message": f"خطأ داخلي: {str(e)}"}
-
 @app.post("/api/invoice/calculate")
 async def calculate_invoice(payload: InvoicePayload):
     try:
@@ -414,7 +425,7 @@ async def diagnose(payload: DiagnosisPayload):
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
     save_to_db(payload.phone, "صداقة رويال مايند", f"الطلب: {payload.client_message}\n\nالرد: {res}")
     
-    return {"status": "success", "diagnosis": res}
+    return {"status": "success", "answer": res}
 
 @app.post("/api/chat")
 async def chat(payload: ChatPayload):
