@@ -33,16 +33,15 @@
 
     <div id="authOverlay">
         <div class="glass-card text-center" style="max-width: 90%; width: 400px;">
-           <!-- اللوجو مع إضافة v=2 لكسر الكاش الإجباري -->
            <img src="logo.jpg?v=2" alt="Royal Elchim Logo" style="max-width: 120px; border-radius: 50%; border: 2px solid #b58900; padding: 3px; box-shadow: 0 4px 15px rgba(181,137,0,0.2); margin-bottom: 15px;" onerror="this.src='https://raw.githubusercontent.com/totasimsimanise/royal-mind-engine/main/logo.jpg'">
             <h4 class="gold-text mt-3 mb-2">بوابة الهوية الملكية</h4>
+            <p class="small text-muted mb-4">أدخلي رقم الواتساب الخاص بكِ لربط سجلاتك المركزية.</p>
             <input type="tel" id="royalPhoneInput" class="form-control text-center mb-3 fw-bold" placeholder="مثال: 01xxxxxxxxx">
             <button class="btn gold-btn" onclick="authenticateUser()">دخول القصر <i class="fa-solid fa-key"></i></button>
         </div>
     </div>
 
     <div class="container pt-4 text-center">
-        <!-- اللوجو مع كسر الكاش -->
         <img src="logo.jpg?v=2" alt="Royal Elchim Logo" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 2px; box-shadow: 0 4px 10px rgba(181,137,0,0.2); margin-bottom: 10px;" onerror="this.src='https://raw.githubusercontent.com/totasimsimanise/royal-mind-engine/main/logo.jpg'">
         <p class="small text-muted mt-1 mb-1" style="font-weight: bold;">نظام الإدارة والذكاء الجمالي الشامل</p>
         <p class="small gold-text fw-bold mb-1" id="currentUserDisplay" style="display:none;"></p>
@@ -87,20 +86,23 @@
             </div>
         </div>
 
-        <!-- شاشة الواقع المعزز الذكية -->
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> محلل البشرة واستخراج الألوان (AI)</h4>
-                <p class="small text-center text-muted mb-3">ارفعي المنتج لنستخرج لونه، أو دعي الذكاء الاصطناعي يحلل لون بشرتك ويختار الأنسب.</p>
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> محرك L'Oréal المعزز (AI)</h4>
+                <p class="small text-center text-muted mb-3">يحتفظ محرك LAB بتجاعيد الشفاه وإضاءة الغرفة الأصلية.</p>
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-6">
                         <select id="simMakeupType" class="form-select fw-bold text-center">
-                            <option value="foundation">كريم أساس (Foundation)</option>
                             <option value="lips">أحمر شفاه (Lipstick)</option>
-                            <option value="eyeshadow">ظلال عيون (Eyeshadow)</option>
+                            <option value="foundation">كريم أساس (Foundation)</option>
                             <option value="blush">أحمر خدود (Blush)</option>
-                            <option value="highlighter">هايلايتر مضيء (Highlighter)</option>
-                            <option value="concealer">كونسيلر (Concealer)</option>
+                            <option value="eyeshadow">ظلال عيون (Eyeshadow)</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select id="simTextureType" class="form-select fw-bold text-center text-primary">
+                            <option value="matte">ملمس مطفي (Matte)</option>
+                            <option value="glossy">ملمس لامع (Glossy)</option>
                         </select>
                     </div>
                 </div>
@@ -114,7 +116,7 @@
                         <div id="simProductPreview"></div>
                     </div>
                 </div>
-                <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق المحلل الذكي <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق المحرك الذكي <i class="fa-solid fa-wand-magic-sparkles"></i></button>
                 <div id="simResponse" class="royal-response" style="display:none;"></div>
             </div>
         </div>
@@ -272,13 +274,20 @@
         async function runSimulation() {
             if(!imagesData.selfieBase64) return alert("يجب رفع صورة وجهكِ السيلفي أولاً لكي يحللها الذكاء الاصطناعي.");
             let selectedType = document.getElementById('simMakeupType').value;
+            let selectedTexture = document.getElementById('simTextureType').value; // إرسال الملمس للسيرفر
             let out = document.getElementById('simResponse');
 
-            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتم تحليل البشرة والواقع المعزز...</span>";
+            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> محرك LAB يعمل على الإضاءة والتجاعيد...</span>";
             try {
                 let res = await fetch(`${BACKEND_URL}/api/simulate_makeup`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_selfie: imagesData.selfieBase64, product_image: imagesData.productBase64, makeup_type: selectedType, phone: currentUserPhone })
+                    body: JSON.stringify({ 
+                        user_selfie: imagesData.selfieBase64, 
+                        product_image: imagesData.productBase64, 
+                        makeup_type: selectedType, 
+                        texture: selectedTexture, 
+                        phone: currentUserPhone 
+                    })
                 });
                 let data = await res.json();
                 if(data.status === 'success') { 
