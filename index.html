@@ -25,37 +25,34 @@
         .form-control, .form-select { background-color: rgba(255, 255, 255, 0.9) !important; color: #1a1a2e !important; border: 1px solid rgba(181, 137, 0, 0.3) !important; }
         .play-voice-btn { background: #b58900; color: #fff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; margin-top: 15px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; }
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .mic-btn { color: #b58900; border-color: #b58900; font-weight: bold; transition: 0.3s; }
-        .mic-btn:hover { background-color: #b58900; color: white; }
-        .recording { animation: pulseMic 1.5s infinite; background-color: #ff4d4d !important; color: white !important; border-color: #ff4d4d !important; }
-        @keyframes pulseMic { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 10px #ff4d4d; } 100% { transform: scale(1); } }
+        .delete-btn { cursor: pointer; color: #dc3545; transition: 0.3s; padding: 5px; }
+        .delete-btn:hover { color: #a71d2a; transform: scale(1.1); }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="glass-card text-center" style="max-width: 90%; width: 400px;">
-           <img src="Usama%20Logo%20low.jpg" ?v=2 alt="Royal Elchim Logo" style="max-width: 120px; border-radius: 50%; border: 2px solid #b58900; padding: 3px; box-shadow: 0 4px 15px rgba(181,137,0,0.2); margin-bottom: 15px;">
+           <!-- اللوجو مع إضافة v=2 لكسر الكاش الإجباري -->
+           <img src="logo.jpg?v=2" alt="Royal Elchim Logo" style="max-width: 120px; border-radius: 50%; border: 2px solid #b58900; padding: 3px; box-shadow: 0 4px 15px rgba(181,137,0,0.2); margin-bottom: 15px;" onerror="this.src='https://raw.githubusercontent.com/totasimsimanise/royal-mind-engine/main/logo.jpg'">
             <h4 class="gold-text mt-3 mb-2">بوابة الهوية الملكية</h4>
-            <p class="small text-muted mb-4">أدخلي رقم الواتساب الخاص بكِ لربط سجلاتك المركزية.</p>
             <input type="tel" id="royalPhoneInput" class="form-control text-center mb-3 fw-bold" placeholder="مثال: 01xxxxxxxxx">
             <button class="btn gold-btn" onclick="authenticateUser()">دخول القصر <i class="fa-solid fa-key"></i></button>
         </div>
     </div>
 
     <div class="container pt-4 text-center">
-        <img src="Usama%20Logo%20low.jpg" alt="Royal Elchim Logo" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 2px; box-shadow: 0 4px 10px rgba(181,137,0,0.2); margin-bottom: 10px;">
+        <!-- اللوجو مع كسر الكاش -->
+        <img src="logo.jpg?v=2" alt="Royal Elchim Logo" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 2px; box-shadow: 0 4px 10px rgba(181,137,0,0.2); margin-bottom: 10px;" onerror="this.src='https://raw.githubusercontent.com/totasimsimanise/royal-mind-engine/main/logo.jpg'">
         <p class="small text-muted mt-1 mb-1" style="font-weight: bold;">نظام الإدارة والذكاء الجمالي الشامل</p>
         <p class="small gold-text fw-bold mb-1" id="currentUserDisplay" style="display:none;"></p>
-        <!-- زر تسجيل الخروج لتبديل الأرقام بسهولة -->
         <button class="btn btn-sm btn-outline-danger mt-2 mb-2" id="logoutBtn" style="display:none; margin: 0 auto;" onclick="logoutUser()">تبديل الحساب <i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
 
     <div class="container mt-2">
-        <!-- بقية الشاشات كما هي بدون تغيير -->
         <div id="screen-search" class="app-screen active">
             <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-barcode"></i> الاستعلام والجرد للفروع</h4>
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-barcode"></i> الاستعلام والتسوق</h4>
                 <div class="input-group mb-3">
                     <input type="text" id="royalSearchInput" class="form-control text-center py-2" placeholder="ادخلي اسم صنف..." oninput="debounceSearch(this.value)">
                 </div>
@@ -66,8 +63,7 @@
         <div id="screen-diagnosis" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-heart"></i> رويال مايند معاكِ للأبد</h4>
-                <textarea id="diagnosisInput" class="form-control mb-2" rows="4" placeholder="اكتبي ما يجول بخاطركِ هنا... رويال مايند تتذكر كل تفاصيلك."></textarea>
-                <button id="mic-diagnosisInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('diagnosisInput', 'mic-diagnosisInput')"><i class="fa-solid fa-microphone"></i> تحدثي لرويال مايند</button>
+                <textarea id="diagnosisInput" class="form-control mb-2" rows="4" placeholder="اكتبي ما يجول بخاطركِ هنا..."></textarea>
                 <button class="btn gold-btn py-2" onclick="runDiagnosis()">إطلاق حديث الصداقة الملكي <i class="fa-solid fa-sparkles"></i></button>
                 <div id="diagResponse" class="royal-response" style="display:none;"></div>
             </div>
@@ -77,7 +73,6 @@
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-spray-can-sparkles"></i> الأثر العطري</h4>
                 <textarea id="perfumeInput" class="form-control mb-2" rows="3" placeholder="صفي طابعكِ العطري..."></textarea>
-                <button id="mic-perfumeInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('perfumeInput', 'mic-perfumeInput')"><i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة</button>
                 <button class="btn gold-btn py-2" onclick="craftPerfume()">ابتكار التوقيع العطري السحري</button>
                 <div id="perfumeResponse" class="royal-response" style="display:none;"></div>
             </div>
@@ -87,17 +82,18 @@
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-paintbrush"></i> النحت الجمالي والموضة</h4>
                 <textarea id="makeupInput" class="form-control mb-2" rows="3" placeholder="صفي لنا الإطلالة التي تطمحين إليها..."></textarea>
-                <button id="mic-makeupInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('makeupInput', 'mic-makeupInput')"><i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة</button>
                 <button class="btn gold-btn py-2" onclick="runChat('makeup', 'makeupInput', 'makeupResponse')">استشارة النحت والجمال</button>
                 <div id="makeupResponse" class="royal-response" style="display:none;"></div>
             </div>
         </div>
 
+        <!-- شاشة الواقع المعزز الذكية -->
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> التخيل والتحليل الوجداني (AR)</h4>
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> محلل البشرة واستخراج الألوان (AI)</h4>
+                <p class="small text-center text-muted mb-3">ارفعي المنتج لنستخرج لونه، أو دعي الذكاء الاصطناعي يحلل لون بشرتك ويختار الأنسب.</p>
                 <div class="row mb-3">
-                    <div class="col-8">
+                    <div class="col-12">
                         <select id="simMakeupType" class="form-select fw-bold text-center">
                             <option value="foundation">كريم أساس (Foundation)</option>
                             <option value="lips">أحمر شفاه (Lipstick)</option>
@@ -107,22 +103,18 @@
                             <option value="concealer">كونسيلر (Concealer)</option>
                         </select>
                     </div>
-                    <div class="col-4">
-                        <input type="color" id="simColorHex" class="form-control" style="height: 100%; padding: 0;" value="#8B0000">
-                    </div>
                 </div>
                 <div class="row text-center mb-3">
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-user"></i> وجهكِ السيلفي<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simSelfiePreview', 'selfieBase64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-user"></i> وجهكِ<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simSelfiePreview', 'selfieBase64')"></label>
                         <div id="simSelfiePreview"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-box-open"></i> صورة المنتج<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simProductPreview', 'productBase64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-box-open"></i> المنتج (اختياري)<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simProductPreview', 'productBase64')"></label>
                         <div id="simProductPreview"></div>
                     </div>
                 </div>
-                <input type="text" id="simProductName" class="form-control mb-3 text-center" placeholder="اسم منتج التجميل أو الماركة">
-                <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق المكياج بالواقع المعزز <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق المحلل الذكي <i class="fa-solid fa-wand-magic-sparkles"></i></button>
                 <div id="simResponse" class="royal-response" style="display:none;"></div>
             </div>
         </div>
@@ -131,13 +123,13 @@
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-server"></i> السجلات المركزية</h4>
                 <button class="btn btn-sm btn-outline-primary d-block mx-auto mb-3 fw-bold" onclick="renderVault()"><i class="fa-solid fa-rotate"></i> تحديث السجلات</button>
-                <div id="vaultContainer" style="max-height: 400px; overflow-y: auto;"></div>
+                <div id="vaultContainer" style="max-height: 500px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
+        <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>تسوق</span></div>
         <div class="nav-item" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-heart"></i><span>للأبد</span></div>
         <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
         <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
@@ -146,7 +138,6 @@
     </div>
 
     <script>
-        // ⚠️ تأكد من رابط سيرفرك هنا ⚠️
         const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space"; 
 
         let searchTimer;
@@ -177,7 +168,6 @@
             renderVault();
         }
 
-        // دالة تسجيل الخروج لتبديل الرقم
         function logoutUser() {
             localStorage.removeItem('royal_user_phone');
             currentUserPhone = "";
@@ -194,24 +184,6 @@
             document.getElementById('screen-' + id).classList.add('active');
             el.classList.add('active');
             if(id === 'vault') { renderVault(); }
-        }
-
-        function startDictation(targetInputId, buttonId) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("عذراً، متصفحك لا يدعم ميزة التحدث الصوتي."); return; }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'ar-EG'; recognition.interimResults = false; recognition.maxAlternatives = 1;
-            const btn = document.getElementById(buttonId);
-            const originalText = btn.innerHTML;
-            recognition.onstart = function() { btn.classList.add("recording"); btn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-fade"></i> جاري الاستماع...'; };
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                const inputElement = document.getElementById(targetInputId);
-                inputElement.value += (inputElement.value ? " " : "") + transcript;
-            };
-            recognition.onerror = function() { alert("لم نتمكن من التقاط الصوت بوضوح."); };
-            recognition.onend = function() { btn.classList.remove("recording"); btn.innerHTML = originalText; };
-            recognition.start();
         }
 
         function processAndPreviewImage(event, previewId, dataKey) {
@@ -238,19 +210,9 @@
             reader.readAsDataURL(file);
         }
 
-        function playVoice(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/[\*#]/g, '');
-                let utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'ar-SA'; utterance.rate = 0.85;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
         function formatResponse(text) {
             let encoded = encodeURIComponent(text);
-            return `<div>${text}</div><button class="play-voice-btn" onclick="playVoice(decodeURIComponent('${encoded}'))"><i class="fa-solid fa-volume-high"></i> استمع للرد الملكي</button>`;
+            return `<div>${text}</div>`;
         }
 
         function debounceSearch(val) {
@@ -266,8 +228,8 @@
                 const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(query)}`);
                 const result = await res.json();
                 if(result.status === 'success' && result.data.length > 0) {
-                    container.innerHTML = result.data.map(item => `<div class="glass-card mb-3 p-3"><b>${item.name}</b><br>${item.price} ج.م</div>`).join('');
-                } else { container.innerHTML = "<p>غير متوفر.</p>"; }
+                    container.innerHTML = result.data.map(item => `<div class="glass-card mb-3 p-3" style="text-align:right;">${item.name}<br><b class="gold-text">${item.price} ج.م</b></div>`).join('');
+                } else { container.innerHTML = "<p class='text-muted'>الصنف غير متوفر.</p>"; }
             } catch { container.innerHTML = "<p class='text-danger'>خطأ اتصال.</p>"; }
         }
 
@@ -275,19 +237,19 @@
             let msg = document.getElementById('diagnosisInput').value;
             let out = document.getElementById('diagResponse');
             if(!msg) return;
-            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتناغم مع تاريخكِ وروحكِ...</span>";
+            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتناغم مع تاريخكِ...</span>";
             try {
                 let res = await fetch(`${BACKEND_URL}/api/diagnose`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client_message: msg, phone: currentUserPhone }) });
                 let data = await res.json();
                 if(data.status === 'success') { out.innerHTML = formatResponse(data.diagnosis); renderVault(); }
-            } catch { out.innerHTML = "<span class='text-danger'>خطأ في الاتصال.</span>"; }
+            } catch { out.innerHTML = "<span class='text-danger'>خطأ اتصال.</span>"; }
         }
 
         async function craftPerfume() {
             let msg = document.getElementById('perfumeInput').value;
             let out = document.getElementById('perfumeResponse');
             if(!msg) return;
-            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري استخلاص الزيوت من المخازن...</span>";
+            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> الخيميائي يعمل...</span>";
             try {
                 let res = await fetch(`${BACKEND_URL}/api/craft_perfume`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client_message: msg, phone: currentUserPhone }) });
                 let data = await res.json();
@@ -308,28 +270,35 @@
         }
 
         async function runSimulation() {
-            if(!imagesData.selfieBase64) return alert("يجب رفع صورة وجهكِ السيلفي أولاً.");
-            let name = document.getElementById('simProductName').value || "";
+            if(!imagesData.selfieBase64) return alert("يجب رفع صورة وجهكِ السيلفي أولاً لكي يحللها الذكاء الاصطناعي.");
             let selectedType = document.getElementById('simMakeupType').value;
-            let selectedColor = document.getElementById('simColorHex').value;
             let out = document.getElementById('simResponse');
 
-            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتم دمج الواقع المعزز...</span>";
+            out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتم تحليل البشرة والواقع المعزز...</span>";
             try {
                 let res = await fetch(`${BACKEND_URL}/api/simulate_makeup`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_selfie: imagesData.selfieBase64, product_image: imagesData.productBase64, product_name_desc: name, makeup_type: selectedType, hex_color: selectedColor, phone: currentUserPhone })
+                    body: JSON.stringify({ user_selfie: imagesData.selfieBase64, product_image: imagesData.productBase64, makeup_type: selectedType, phone: currentUserPhone })
                 });
                 let data = await res.json();
                 if(data.status === 'success') { 
-                    let arImageHtml = data.face_detected ? `<div class="text-center mb-3"><p class="small gold-text fw-bold">تأثير الواقع المعزز (AR)</p><img src="${data.result_image}" class="preview-img" style="border: 2px solid #b58900; border-radius: 8px;"></div>` : '';
+                    let arImageHtml = data.face_detected ? `<div class="text-center mb-3"><p class="small gold-text fw-bold">النتيجة بعد دمج الذكاء الاصطناعي</p><img src="${data.result_image}" class="preview-img" style="border: 2px solid #b58900; border-radius: 8px;"></div>` : '';
                     out.innerHTML = arImageHtml + formatResponse(data.simulation_result); 
                     renderVault(); 
                 }
-            } catch { out.innerHTML = "<span class='text-danger'>فشل الاتصال.</span>"; }
+            } catch { out.innerHTML = "<span class='text-danger'>فشل الاتصال بالذكاء الاصطناعي.</span>"; }
         }
 
-        // 🖼️ دالة استدعاء السجلات المطورة مع إظهار الصور
+        async function deleteRecord(recordId) {
+            if(!confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
+            try {
+                let res = await fetch(`${BACKEND_URL}/api/vault/${recordId}?phone=${currentUserPhone}`, { method: 'DELETE' });
+                let data = await res.json();
+                if(data.status === 'success') { renderVault(); } 
+                else { alert("حدث خطأ، لم يتم الحذف."); }
+            } catch(e) { alert("خطأ في الاتصال بالخادم."); }
+        }
+
         async function renderVault() {
             if(!currentUserPhone) return;
             let cont = document.getElementById('vaultContainer');
@@ -349,8 +318,14 @@
                         }
                         
                         return `
-                        <div class="p-3 mb-3" style="background:rgba(255,255,255,0.5); border-right:4px solid #b58900; border-radius:8px; text-align:right;">
-                            <div class="d-flex justify-content-between gold-text small mb-2"><span class="fw-bold">${i.type}</span><span dir="ltr">${i.date}</span></div>
+                        <div class="p-3 mb-3" style="background:rgba(255,255,255,0.5); border-right:4px solid #b58900; border-radius:8px; text-align:right; position:relative;">
+                            <div class="d-flex justify-content-between gold-text small mb-2">
+                                <span class="fw-bold">${i.type}</span>
+                                <span dir="ltr">
+                                    ${i.date} 
+                                    <i class="fa-solid fa-trash delete-btn ms-2" onclick="deleteRecord('${i.id}')" title="حذف السجل"></i>
+                                </span>
+                            </div>
                             ${imagesHtml ? `<div class="mb-3 text-center" style="background:#fff; padding:10px; border-radius:8px;">${imagesHtml}</div>` : ''}
                             <div class="small fw-bold" style="white-space:pre-line; color:#1a1a2e;">${i.text}</div>
                         </div>
