@@ -24,7 +24,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# 📚 مكتبة قراءة الـ PDF السحرية
+# 📚 مكتبة قراءة الـ PDF السحرية (تأكد من وجود PyPDF2 في requirements.txt)
 try:
     import PyPDF2
 except ImportError:
@@ -111,12 +111,12 @@ TEXT_MODELS = ["gemini-3.5-pro", "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2
 VISION_MODELS = TEXT_MODELS
 
 # =========================================================
-# 🛠️ [NATIVE FUNCTION CALLING TOOLS] الأسلحة الذكية
+# 🛠️ [NATIVE FUNCTION CALLING TOOLS] الأداة السحرية
 # =========================================================
 def read_local_file(filename: str) -> str:
     """
     أداة لقراءة الملفات (سواء PDF أو TXT أو CSV) من خوادم Royal Elchim.
-    قم باستدعاء هذه الأداة حصرياً إذا طلب منك العميل قراءة ملف معين أو البحث عن تركيبة كيميائية معقدة داخل ملف.
+    قم باستدعاء هذه الأداة حصرياً إذا طلب منك العميل قراءة ملف معين أو البحث عن تركيبة داخل ملف.
     """
     try:
         target_file = None
@@ -128,7 +128,6 @@ def read_local_file(filename: str) -> str:
         if not target_file:
             return f"عذراً، لم أتمكن من العثور على ملف باسم '{filename}' في الخزنة السرية."
 
-        # إذا كان الملف PDF
         if target_file.lower().endswith('.pdf'):
             text = f"--- محتوى ملف {target_file} ---\n"
             with open(target_file, 'rb') as f:
@@ -137,12 +136,11 @@ def read_local_file(filename: str) -> str:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
-            return text[:20000] # حماية من الحجم الزائد
+            return text[:25000] # حماية من الحجم الزائد
 
-        # إذا كان ملف نصي عادي
         else:
             with open(target_file, 'r', encoding='utf-8', errors='ignore') as f:
-                return f"--- محتوى ملف {target_file} ---\n" + f.read()[:20000]
+                return f"--- محتوى ملف {target_file} ---\n" + f.read()[:25000]
                 
     except Exception as e:
         return f"حدث خطأ أثناء محاولة قراءة الملف: {str(e)}"
@@ -155,22 +153,25 @@ def robust_generate(client_api_key, contents, models_list):
     if not keys_to_use: raise HTTPException(status_code=500, detail="مفاتيح الخادم السحابي غير مهيأة بعد.")
     random.shuffle(keys_to_use)
     last_error = ""
+    
+    # 🎯 معالجة ذكية: تحويل المصفوفة لنص إذا كانت تحتوي على رسالة واحدة فقط
+    safe_contents = contents[0] if isinstance(contents, list) and len(contents) == 1 and isinstance(contents[0], str) else contents
+
     for model_name in models_list:
         for key in keys_to_use:
             for _ in range(2):
                 try:
                     client = genai.Client(api_key=key)
-                    # 🎯 زراعة الأداة بداخل الـ Config ليستخدمها الذكاء تلقائياً
-                    config = types.GenerateContentConfig(
-                        temperature=0.8, 
-                        top_p=0.95,
-                        tools=[read_local_file] 
-                    )
+                    config_with_tools = types.GenerateContentConfig(temperature=0.8, top_p=0.95, tools=[read_local_file])
+                    config_without_tools = types.GenerateContentConfig(temperature=0.8, top_p=0.95)
                     
-                    # نستخدم واجهة الـ Chat لأنها تنفذ الـ Function Calling تلقائياً 
-                    # (الذكاء الاصطناعي يطلب الأداة -> السيرفر ينفذها -> يعيد الناتج للذكاء -> الذكاء يرد عليك)
-                    chat = client.chats.create(model=model_name, config=config)
-                    response = chat.send_message(contents)
+                    if isinstance(safe_contents, list):
+                        # للصور (الواقع المعزز): لا نستخدم أدوات لمنع التعارض
+                        response = client.models.generate_content(model=model_name, contents=safe_contents, config=config_without_tools)
+                    else:
+                        # للنصوص العادية: نستخدم وضع الدردشة ليستطيع تشغيل الأداة تلقائياً
+                        chat = client.chats.create(model=model_name, config=config_with_tools)
+                        response = chat.send_message(safe_contents)
                     
                     if response and response.text: 
                         return response.text
@@ -179,6 +180,16 @@ def robust_generate(client_api_key, contents, models_list):
                     if any(x in last_error for x in ["503", "ResourceExhausted", "429"]): time.sleep(1.5); continue
                     break
     raise HTTPException(status_code=503, detail=f"تعذر الاتصال بالذكاء الاصطناعي. الخطأ: {last_error}")
+
+# =========================================================
+# [دوال التنظيف والقراءة]
+# =========================================================
+def clean_qty_value(val):
+    if val is None: return 0.0
+    s = str(val).strip().replace(',', '.')
+    if s == '' or s.lower() == 'nan': return 0.0
+    try: return float(s)
+    except: return 0.0
 
 def get_inventory():
     try:
@@ -193,102 +204,6 @@ def get_inventory():
             return pd.read_csv(target_file, encoding='utf-8-sig', on_bad_lines='skip').fillna("")
         return pd.DataFrame()
     except: return pd.DataFrame()
-
-def get_brand_catalog():
-    catalog = ""
-    try:
-        for f in os.listdir('.'):
-            if f.endswith('.txt') and 'requirements' not in f.lower():
-                with open(f, 'r', encoding='utf-8') as file:
-                    catalog += file.read() + "\n"
-        brand_file = "ROYALELCHIMBRAND.xls.xlsx"
-        if os.path.exists(brand_file):
-            df = pd.read_excel(brand_file)
-            if 'الصنف' in df.columns:
-                ready_items = [str(row.get('الصنف', '')).strip() for _, row in df.head(135).iterrows() if str(row.get('الصنف', '')).strip() and str(row.get('الصنف', '')).lower() != 'nan']
-                if ready_items:
-                    catalog += "\n[قائمة عطور براند Royal Elchim الجاهزة في المعرض - للترشيح المباشر]:\n" + "، ".join(ready_items) + "\n"
-        return catalog
-    except: return catalog
-
-class DiagnosisPayload(BaseModel):
-    client_message: str
-    phone: str
-    client_api_key: Optional[str] = None
-
-class ChatPayload(BaseModel):
-    text: str
-    category: str  
-    phone: str
-    client_api_key: Optional[str] = None
-
-class SimulationPayload(BaseModel):
-    user_selfie: str
-    phone: str
-    product_image: Optional[str] = None
-    product_name_desc: Optional[str] = None
-    makeup_type: str = "lips"
-    hex_color: Optional[str] = "#8B0000"
-    client_api_key: Optional[str] = None
-
-class PerfumeCraftPayload(BaseModel):
-    client_message: str
-    phone: str
-    client_api_key: Optional[str] = None
-
-def hex_to_rgb(hex_color: str):
-    if not hex_color: return (139, 0, 0)
-    hex_color = hex_color.lstrip('#')
-    try: return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    except: return (139, 0, 0)
-
-def apply_royal_makeup(image_cv: np.ndarray, color_rgb: tuple, makeup_type: str):
-    try:
-        image_rgb = cv2.cvtColor(image_cv, cv2.COLOR_BGR2RGB)
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
-        detection_result = face_landmarker.detect(mp_image)
-        if not detection_result.face_landmarks: return image_cv, False
-
-        height, width, _ = image_cv.shape
-        face_landmarks = detection_result.face_landmarks[0]
-        ZONES = {
-            "lips": [[61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95, 185]],
-            "eyeshadow": [[33, 246, 161, 160, 159, 158, 157, 173, 133], [362, 398, 384, 385, 386, 387, 388, 466, 263]],
-            "blush": [[116, 117, 118, 119, 100, 120, 121, 147, 213, 192, 214, 210, 211, 32, 208, 199], [345, 346, 347, 348, 329, 350, 351, 376, 433, 416, 434, 430, 431, 262, 428, 420]],
-            "highlighter": [[116, 117, 118, 119, 147, 213], [345, 346, 347, 348, 376, 433], [197, 195, 5, 4]],
-            "foundation": [[10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109]]
-        }
-        target_zones = ZONES.get(makeup_type, ZONES["lips"])
-        mask = np.zeros((height, width), dtype=np.uint8)
-        for zone in target_zones:
-            points = np.array([ [int(face_landmarks[idx].x * width), int(face_landmarks[idx].y * height)] for idx in zone ], dtype=np.int32)
-            cv2.fillPoly(mask, [points], 255)
-        blur_radius = (45, 45) if makeup_type in ["blush", "foundation"] else (21, 21)
-        mask = cv2.GaussianBlur(mask, blur_radius, 0)
-        alpha = np.expand_dims(mask / 255.0, axis=-1)
-        color_layer = np.zeros_like(image_cv)
-        color_layer[:] = color_rgb[::-1]
-
-        if makeup_type == "foundation":
-            smooth_skin = cv2.bilateralFilter(image_cv, 15, 75, 75)
-            blended_layer = cv2.addWeighted(smooth_skin, 0.7, color_layer, 0.3, 0)
-        elif makeup_type == "highlighter":
-            blended_layer = cv2.addWeighted(image_cv, 0.5, cv2.add(image_cv, color_layer), 0.5, 0)
-        else:
-            multiply_blend = (image_cv.astype(np.float32) * color_layer.astype(np.float32)) / 255.0
-            opacity = 0.55 if makeup_type == "lips" else 0.4
-            blended_layer = ((1.0 - opacity) * image_cv.astype(np.float32) + opacity * multiply_blend).astype(np.uint8)
-        return ((1.0 - alpha) * image_cv + alpha * blended_layer).astype(np.uint8), True
-    except: return image_cv, False
-
-BASE_PHILOSOPHY = "أنتِ رويال مايند، العقل البرمجي والوجداني لبراند Royal Elchim الجمالي المتكامل."
-
-def clean_qty_value(val):
-    if val is None: return 0.0
-    s = str(val).strip().replace(',', '.')
-    if s == '' or s.lower() == 'nan': return 0.0
-    try: return float(s)
-    except: return 0.0
 
 def get_qty_by_keyword(row, keywords):
     for col in row.keys():
@@ -337,6 +252,48 @@ async def search(query: str):
     except Exception as e:
         return {"status": "error", "message": f"خطأ داخلي: {str(e)}"}
 
+def get_brand_catalog():
+    catalog = ""
+    try:
+        for f in os.listdir('.'):
+            if f.endswith('.txt') and 'requirements' not in f.lower():
+                with open(f, 'r', encoding='utf-8') as file:
+                    catalog += file.read() + "\n"
+        brand_file = "ROYALELCHIMBRAND.xls.xlsx"
+        if os.path.exists(brand_file):
+            df = pd.read_excel(brand_file)
+            if 'الصنف' in df.columns:
+                ready_items = [str(row.get('الصنف', '')).strip() for _, row in df.head(135).iterrows() if str(row.get('الصنف', '')).strip() and str(row.get('الصنف', '')).lower() != 'nan']
+                if ready_items:
+                    catalog += "\n[قائمة عطور براند Royal Elchim الجاهزة في المعرض - للترشيح المباشر]:\n" + "، ".join(ready_items) + "\n"
+        return catalog
+    except: return catalog
+
+class DiagnosisPayload(BaseModel):
+    client_message: str
+    phone: str
+    client_api_key: Optional[str] = None
+
+class ChatPayload(BaseModel):
+    text: str
+    category: str  
+    phone: str
+    client_api_key: Optional[str] = None
+
+class SimulationPayload(BaseModel):
+    user_selfie: str
+    phone: str
+    product_image: Optional[str] = None
+    product_name_desc: Optional[str] = None
+    makeup_type: str = "lips"
+    hex_color: Optional[str] = "#8B0000"
+    client_api_key: Optional[str] = None
+
+class PerfumeCraftPayload(BaseModel):
+    client_message: str
+    phone: str
+    client_api_key: Optional[str] = None
+
 @app.get("/api/vault")
 async def get_vault(phone: str):
     if vault_collection is None: return {"status": "error", "message": "قاعدة البيانات غير متصلة"}
@@ -371,8 +328,7 @@ async def delete_vault_record(record_id: str, phone: str):
 async def diagnose(payload: DiagnosisPayload):
     history = get_history_from_db(payload.phone)
     profiler = f"تاريخ العميل: [{history}]، استنتجي بصمته الوجدانية." if history else "عميل جديد."
-    # 🎯 تعليمات واضحة للذكاء ليعرف أنه يملك الأداة
-    prompt = f"{BASE_PHILOSOPHY}\n\n{profiler}\nملاحظة لك كذكاء اصطناعي: أنت تملك أداة اسمها read_local_file، إذا طلب العميل قراءة ملف PDF أو نصي قم باستخدامها فوراً.\n\nطلب العميل: '{payload.client_message}'"
+    prompt = f"{BASE_PHILOSOPHY}\n\n{profiler}\nملاحظة هامة لك: أنت تملك أداة قوية اسمها read_local_file، إذا طلب العميل قراءة ملف PDF أو نصي موجود على السيرفر قم باستدعائها تلقائياً.\n\nطلب العميل: '{payload.client_message}'"
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
     save_to_db(payload.phone, "صداقة رويال مايند", f"الطلب: {payload.client_message}\n\nالرد: {res}")
     return {"status": "success", "diagnosis": res, "answer": res}
@@ -381,7 +337,7 @@ async def diagnose(payload: DiagnosisPayload):
 async def chat(payload: ChatPayload):
     history = get_history_from_db(payload.phone)
     profiler = f"تاريخ العميل: [{history}]، استنتجي بصمته الوجدانية." if history else "عميل جديد."
-    prompt = f"{BASE_PHILOSOPHY}\n\n{profiler}\nملاحظة لك كذكاء اصطناعي: أنت تملك أداة اسمها read_local_file، إذا طلب العميل قراءة ملف PDF أو نصي قم باستخدامها فوراً.\n\nطلب العميل: '{payload.text}'"
+    prompt = f"{BASE_PHILOSOPHY}\n\n{profiler}\nملاحظة هامة لك: أنت تملك أداة قوية اسمها read_local_file، إذا طلب العميل قراءة ملف PDF أو نصي موجود على السيرفر قم باستدعائها تلقائياً.\n\nطلب العميل: '{payload.text}'"
     res = robust_generate(payload.client_api_key, [prompt], TEXT_MODELS)
     save_to_db(payload.phone, "استشارة مكياج", f"الطلب: {payload.text}\n\nالرد: {res}")
     return {"status": "success", "diagnosis": res, "answer": res}
@@ -428,7 +384,8 @@ async def craft_perfume(payload: PerfumeCraftPayload):
             oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
             for _, row in oils_df.head(60).iterrows():
                 name = str(row.get('الصنف', '')).strip()
-                price = float(str(row.get('سعر1 كارت', 0)).replace(',','.')) if str(row.get('سعر1 كارت', 0)).strip() != '' else 0
+                # 🎯 السر هنا: استبدلنا الدالة المكسورة بالدالة المنيعة clean_qty_value
+                price = clean_qty_value(row.get('سعر1 كارت', 0))
                 if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
         
         oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الأسعار قيد التحديث."
@@ -436,7 +393,7 @@ async def craft_perfume(payload: PerfumeCraftPayload):
         
         perfume_prompt = (
             f"{BASE_PHILOSOPHY}\nالتاريخ التراكمي: [{history_context}]\n"
-            f"ملاحظة لك كذكاء اصطناعي: أنت تملك أداة اسمها read_local_file، إذا طلب العميل قراءة تركيبة من ملف PDF أو نصي موجود على السيرفر قم باستدعائها.\n\n"
+            f"ملاحظة هامة لك: أنت تملك أداة اسمها read_local_file، إذا طلب العميل قراءة تركيبة من ملف PDF أو نصي موجود على السيرفر قم باستدعائها تلقائياً.\n\n"
             f"رسالة العميل: '{payload.client_message}'\n\n"
             f"--- القوائم ---\n1. [زيوت التركيب الخام بأسعارها للتركيب فقط]:\n{oils_list_text}\n\n"
             f"2. [أرشيف عطور Royal Elchim الجاهزة للترشيح الجاهز فقط]:\n{brand_catalog}\n-----------------\n\n"
@@ -452,6 +409,7 @@ async def craft_perfume(payload: PerfumeCraftPayload):
         save_to_db(payload.phone, "تصميم عطر ملكي شامل", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
         return {"status": "success", "answer": res, "diagnosis": res}
     except Exception as e:
+        print(f"Craft Perfume Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
