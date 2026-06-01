@@ -7,25 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes aurora { 
-            0% { background-position: 0% 50%; } 
-            50% { background-position: 100% 50%; } 
-            100% { background-position: 0% 50%; } 
-        }
-        body { 
-            background: linear-gradient(135deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #d4fc79, #96e6a1, #fff1eb, #f1eefc); 
-            background-size: 300% 300%; 
-            animation: aurora 12s ease infinite; 
-            color: #1a1a2e; 
-            font-family: 'Times New Roman', serif; 
-            padding-bottom: 90px; 
-            min-height: 100vh; 
-            margin: 0;
-            width: 100vw;
-            overflow-x: hidden;
-        }
+        @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        body { background: linear-gradient(135deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #d4fc79, #96e6a1, #fff1eb, #f1eefc); background-size: 300% 300%; animation: aurora 12s ease infinite; color: #1a1a2e; font-family: 'Times New Roman', serif; padding-bottom: 90px; min-height: 100vh; margin: 0; width: 100vw; overflow-x: hidden; }
         .gold-text { color: #b58900; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); font-weight: bold; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(181, 137, 0, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06); }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(181, 137, 0, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06); }
         .gold-btn { background: linear-gradient(45deg, #b58900, #e5b82c, #b58900); color: #fff; font-weight: bold; border: none; border-radius: 8px; padding: 10px; transition: 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(181,137,0,0.15); }
         .gold-btn:hover { background: linear-gradient(45deg, #e5b82c, #f3e5ab, #e5b82c); transform: scale(1.02); color: #1a1a2e; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(15px); border-top: 1px solid rgba(181, 137, 0, 0.4); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
@@ -37,7 +22,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .royal-response { background: rgba(181, 137, 0, 0.04); border-top: 2px solid #b58900; border-bottom: 2px solid #b58900; border-radius: 8px; padding: 18px; margin-top: 20px; white-space: pre-line; text-align: right; line-height: 1.8; color: #1a1a2e; }
         .preview-img { max-width: 100%; max-height: 130px; object-fit: contain; border-radius: 8px; border: 2px solid #b58900; margin-top: 10px; }
-        .manifesto-badge { border-right: 4px solid #b58900; padding-right: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.03); padding: 14px; border-radius: 6px; }
         .form-control, .form-select { background-color: rgba(255, 255, 255, 0.9) !important; color: #1a1a2e !important; border: 1px solid rgba(181, 137, 0, 0.3) !important; }
         .play-voice-btn { background: #b58900; color: #fff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; margin-top: 15px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; }
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -62,10 +46,13 @@
     <div class="container pt-4 text-center">
         <img src="Usama%20Logo%20low.jpg" alt="Royal Elchim Logo" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 2px; box-shadow: 0 4px 10px rgba(181,137,0,0.2); margin-bottom: 10px;">
         <p class="small text-muted mt-1 mb-1" style="font-weight: bold;">نظام الإدارة والذكاء الجمالي الشامل</p>
-        <p class="small gold-text fw-bold" id="currentUserDisplay" style="display:none;"></p>
+        <p class="small gold-text fw-bold mb-1" id="currentUserDisplay" style="display:none;"></p>
+        <!-- زر تسجيل الخروج لتبديل الأرقام بسهولة -->
+        <button class="btn btn-sm btn-outline-danger mt-2 mb-2" id="logoutBtn" style="display:none; margin: 0 auto;" onclick="logoutUser()">تبديل الحساب <i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
 
     <div class="container mt-2">
+        <!-- بقية الشاشات كما هي بدون تغيير -->
         <div id="screen-search" class="app-screen active">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-barcode"></i> الاستعلام والجرد للفروع</h4>
@@ -80,9 +67,7 @@
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-heart"></i> رويال مايند معاكِ للأبد</h4>
                 <textarea id="diagnosisInput" class="form-control mb-2" rows="4" placeholder="اكتبي ما يجول بخاطركِ هنا... رويال مايند تتذكر كل تفاصيلك."></textarea>
-                <button id="mic-diagnosisInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('diagnosisInput', 'mic-diagnosisInput')">
-                    <i class="fa-solid fa-microphone"></i> تحدثي لرويال مايند
-                </button>
+                <button id="mic-diagnosisInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('diagnosisInput', 'mic-diagnosisInput')"><i class="fa-solid fa-microphone"></i> تحدثي لرويال مايند</button>
                 <button class="btn gold-btn py-2" onclick="runDiagnosis()">إطلاق حديث الصداقة الملكي <i class="fa-solid fa-sparkles"></i></button>
                 <div id="diagResponse" class="royal-response" style="display:none;"></div>
             </div>
@@ -91,10 +76,8 @@
         <div id="screen-perfume" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-spray-can-sparkles"></i> الأثر العطري</h4>
-                <textarea id="perfumeInput" class="form-control mb-2" rows="3" placeholder="صفي طابعكِ العطري... (سيقوم الذكاء باختيار الزيوت وربطها ببرجك)"></textarea>
-                <button id="mic-perfumeInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('perfumeInput', 'mic-perfumeInput')">
-                    <i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة
-                </button>
+                <textarea id="perfumeInput" class="form-control mb-2" rows="3" placeholder="صفي طابعكِ العطري..."></textarea>
+                <button id="mic-perfumeInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('perfumeInput', 'mic-perfumeInput')"><i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة</button>
                 <button class="btn gold-btn py-2" onclick="craftPerfume()">ابتكار التوقيع العطري السحري</button>
                 <div id="perfumeResponse" class="royal-response" style="display:none;"></div>
             </div>
@@ -104,9 +87,7 @@
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-paintbrush"></i> النحت الجمالي والموضة</h4>
                 <textarea id="makeupInput" class="form-control mb-2" rows="3" placeholder="صفي لنا الإطلالة التي تطمحين إليها..."></textarea>
-                <button id="mic-makeupInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('makeupInput', 'mic-makeupInput')">
-                    <i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة
-                </button>
+                <button id="mic-makeupInput" class="btn btn-sm btn-outline-warning w-100 mb-3 mic-btn" onclick="startDictation('makeupInput', 'mic-makeupInput')"><i class="fa-solid fa-microphone"></i> تحدثي بدلاً من الكتابة</button>
                 <button class="btn gold-btn py-2" onclick="runChat('makeup', 'makeupInput', 'makeupResponse')">استشارة النحت والجمال</button>
                 <div id="makeupResponse" class="royal-response" style="display:none;"></div>
             </div>
@@ -115,7 +96,6 @@
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> التخيل والتحليل الوجداني (AR)</h4>
-                
                 <div class="row mb-3">
                     <div class="col-8">
                         <select id="simMakeupType" class="form-select fw-bold text-center">
@@ -131,7 +111,6 @@
                         <input type="color" id="simColorHex" class="form-control" style="height: 100%; padding: 0;" value="#8B0000">
                     </div>
                 </div>
-
                 <div class="row text-center mb-3">
                     <div class="col-6">
                         <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-user"></i> وجهكِ السيلفي<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simSelfiePreview', 'selfieBase64')"></label>
@@ -142,7 +121,6 @@
                         <div id="simProductPreview"></div>
                     </div>
                 </div>
-                
                 <input type="text" id="simProductName" class="form-control mb-3 text-center" placeholder="اسم منتج التجميل أو الماركة">
                 <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق المكياج بالواقع المعزز <i class="fa-solid fa-wand-magic-sparkles"></i></button>
                 <div id="simResponse" class="royal-response" style="display:none;"></div>
@@ -168,7 +146,7 @@
     </div>
 
     <script>
-        // ⚠️ تأكد من وضع رابط السيرفر هنا ⚠️
+        // ⚠️ تأكد من رابط سيرفرك هنا ⚠️
         const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space"; 
 
         let searchTimer;
@@ -181,6 +159,7 @@
                 currentUserPhone = savedPhone;
                 document.getElementById('authOverlay').style.display = 'none';
                 document.getElementById('currentUserDisplay').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'block';
                 document.getElementById('currentUserDisplay').innerText = `هوية العميل النشط: ${currentUserPhone}`;
                 renderVault();
             }
@@ -193,8 +172,20 @@
             localStorage.setItem('royal_user_phone', phone);
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('currentUserDisplay').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'block';
             document.getElementById('currentUserDisplay').innerText = `هوية العميل النشط: ${currentUserPhone}`;
             renderVault();
+        }
+
+        // دالة تسجيل الخروج لتبديل الرقم
+        function logoutUser() {
+            localStorage.removeItem('royal_user_phone');
+            currentUserPhone = "";
+            document.getElementById('currentUserDisplay').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('authOverlay').style.display = 'flex';
+            document.getElementById('royalPhoneInput').value = '';
+            document.getElementById('vaultContainer').innerHTML = '';
         }
 
         function switchTab(id, el) {
@@ -205,44 +196,21 @@
             if(id === 'vault') { renderVault(); }
         }
 
-        // ==========================================
-        // 🎙️ دالة التعرف على الصوت السحرية (المايك)
-        // ==========================================
         function startDictation(targetInputId, buttonId) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("عذراً، متصفحك لا يدعم ميزة التحدث الصوتي. يرجى استخدام جوجل كروم.");
-                return;
-            }
-
+            if (!SpeechRecognition) { alert("عذراً، متصفحك لا يدعم ميزة التحدث الصوتي."); return; }
             const recognition = new SpeechRecognition();
-            recognition.lang = 'ar-EG'; // اللغة العربية بلهجة مصرية
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
+            recognition.lang = 'ar-EG'; recognition.interimResults = false; recognition.maxAlternatives = 1;
             const btn = document.getElementById(buttonId);
             const originalText = btn.innerHTML;
-
-            recognition.onstart = function() {
-                btn.classList.add("recording");
-                btn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-fade"></i> جاري الاستماع...';
-            };
-
+            recognition.onstart = function() { btn.classList.add("recording"); btn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-fade"></i> جاري الاستماع...'; };
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 const inputElement = document.getElementById(targetInputId);
                 inputElement.value += (inputElement.value ? " " : "") + transcript;
             };
-
-            recognition.onerror = function(event) {
-                alert("لم نتمكن من التقاط الصوت بوضوح، الرجاء المحاولة مرة أخرى.");
-            };
-
-            recognition.onend = function() {
-                btn.classList.remove("recording");
-                btn.innerHTML = originalText;
-            };
-
+            recognition.onerror = function() { alert("لم نتمكن من التقاط الصوت بوضوح."); };
+            recognition.onend = function() { btn.classList.remove("recording"); btn.innerHTML = originalText; };
             recognition.start();
         }
 
@@ -309,10 +277,7 @@
             if(!msg) return;
             out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يتناغم مع تاريخكِ وروحكِ...</span>";
             try {
-                let res = await fetch(`${BACKEND_URL}/api/diagnose`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ client_message: msg, phone: currentUserPhone })
-                });
+                let res = await fetch(`${BACKEND_URL}/api/diagnose`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client_message: msg, phone: currentUserPhone }) });
                 let data = await res.json();
                 if(data.status === 'success') { out.innerHTML = formatResponse(data.diagnosis); renderVault(); }
             } catch { out.innerHTML = "<span class='text-danger'>خطأ في الاتصال.</span>"; }
@@ -324,10 +289,7 @@
             if(!msg) return;
             out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري استخلاص الزيوت من المخازن...</span>";
             try {
-                let res = await fetch(`${BACKEND_URL}/api/craft_perfume`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ client_message: msg, phone: currentUserPhone })
-                });
+                let res = await fetch(`${BACKEND_URL}/api/craft_perfume`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client_message: msg, phone: currentUserPhone }) });
                 let data = await res.json();
                 if(data.status === 'success') { out.innerHTML = formatResponse(data.answer); renderVault(); }
             } catch { out.innerHTML = "<span class='text-danger'>خطأ اتصال.</span>"; }
@@ -339,10 +301,7 @@
             if(!text) return;
             out.style.display = 'block'; out.innerHTML = "<span class='gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري الاستخلاص...</span>";
             try {
-                let res = await fetch(`${BACKEND_URL}/api/chat`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ text: text, category: category, phone: currentUserPhone })
-                });
+                let res = await fetch(`${BACKEND_URL}/api/chat`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: text, category: category, phone: currentUserPhone }) });
                 let data = await res.json();
                 if(data.status === 'success') { out.innerHTML = formatResponse(data.answer); renderVault(); }
             } catch { out.innerHTML = "<span class='text-danger'>خطأ اتصال.</span>"; }
@@ -359,14 +318,7 @@
             try {
                 let res = await fetch(`${BACKEND_URL}/api/simulate_makeup`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        user_selfie: imagesData.selfieBase64, 
-                        product_image: imagesData.productBase64, 
-                        product_name_desc: name, 
-                        makeup_type: selectedType,
-                        hex_color: selectedColor,
-                        phone: currentUserPhone 
-                    })
+                    body: JSON.stringify({ user_selfie: imagesData.selfieBase64, product_image: imagesData.productBase64, product_name_desc: name, makeup_type: selectedType, hex_color: selectedColor, phone: currentUserPhone })
                 });
                 let data = await res.json();
                 if(data.status === 'success') { 
@@ -377,6 +329,7 @@
             } catch { out.innerHTML = "<span class='text-danger'>فشل الاتصال.</span>"; }
         }
 
+        // 🖼️ دالة استدعاء السجلات المطورة مع إظهار الصور
         async function renderVault() {
             if(!currentUserPhone) return;
             let cont = document.getElementById('vaultContainer');
@@ -386,12 +339,22 @@
                 let result = await res.json();
                 if(result.status === 'success') {
                     if(result.data.length === 0) { cont.innerHTML = "<p class='text-center text-muted'>لا توجد سجلات بعد.</p>"; return; }
-                    cont.innerHTML = result.data.map(i => `
+                    cont.innerHTML = result.data.map(i => {
+                        let imagesHtml = '';
+                        if(i.selfie && i.selfie.startsWith('data:image')) {
+                            imagesHtml += `<img src="${i.selfie}" style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 1px solid #b58900; margin-left: 10px; object-fit: cover;">`;
+                        }
+                        if(i.product && i.product.startsWith('data:image')) {
+                            imagesHtml += `<img src="${i.product}" style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 1px solid #b58900; object-fit: cover;">`;
+                        }
+                        
+                        return `
                         <div class="p-3 mb-3" style="background:rgba(255,255,255,0.5); border-right:4px solid #b58900; border-radius:8px; text-align:right;">
                             <div class="d-flex justify-content-between gold-text small mb-2"><span class="fw-bold">${i.type}</span><span dir="ltr">${i.date}</span></div>
+                            ${imagesHtml ? `<div class="mb-3 text-center" style="background:#fff; padding:10px; border-radius:8px;">${imagesHtml}</div>` : ''}
                             <div class="small fw-bold" style="white-space:pre-line; color:#1a1a2e;">${i.text}</div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 }
             } catch (e) { cont.innerHTML = "<p class='text-danger'>فشل تحميل السجلات.</p>"; }
         }
