@@ -24,7 +24,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# 📚 مكتبة قراءة الـ PDF السحرية (تأكد من وجود PyPDF2 في requirements.txt)
+# 📚 مكتبة قراءة الـ PDF السحرية
 try:
     import PyPDF2
 except ImportError:
@@ -43,6 +43,9 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"status": "online", "message": "👑 Royal Mind Engine is running successfully on Cloud Vault!"}
+
+# 👑 السطر الذي كان مفقوداً وعاد لعرشه:
+BASE_PHILOSOPHY = "أنتِ رويال مايند، العقل البرمجي والوجداني لبراند Royal Elchim الجمالي المتكامل."
 
 # =========================================================
 # [السجلات الملكية - MongoDB Cloud Vault]
@@ -154,7 +157,7 @@ def robust_generate(client_api_key, contents, models_list):
     random.shuffle(keys_to_use)
     last_error = ""
     
-    # 🎯 معالجة ذكية: تحويل المصفوفة لنص إذا كانت تحتوي على رسالة واحدة فقط
+    # معالجة ذكية: تحويل المصفوفة لنص إذا كانت تحتوي على رسالة واحدة فقط (لتشغيل الأدوات)
     safe_contents = contents[0] if isinstance(contents, list) and len(contents) == 1 and isinstance(contents[0], str) else contents
 
     for model_name in models_list:
@@ -343,76 +346,4 @@ async def chat(payload: ChatPayload):
     return {"status": "success", "diagnosis": res, "answer": res}
 
 @app.post("/api/simulate_makeup")
-async def simulate_makeup(payload: SimulationPayload):
-    try:
-        encoded = payload.user_selfie.split(",", 1)[1] if "," in payload.user_selfie else payload.user_selfie
-        img_data = base64.b64decode(encoded)
-        np_arr = np.frombuffer(img_data, np.uint8)
-        img_cv = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        rgb_color = hex_to_rgb(payload.hex_color)
-        processed_img, face_found = apply_royal_makeup(img_cv, rgb_color, payload.makeup_type)
-        
-        if face_found:
-            _, buffer = cv2.imencode('.jpg', processed_img)
-            result_base64 = f"data:image/jpeg;base64,{base64.b64encode(buffer).decode('utf-8')}"
-        else:
-            result_base64 = payload.user_selfie
-
-        history_context = get_history_from_db(payload.phone)
-        makeup_names_ar = {"lips": "أحمر الشفاه", "eyeshadow": "ظلال العيون", "blush": "أحمر الخدود", "concealer": "الكونسيلر", "foundation": "كريم الأساس", "highlighter": "الهايلايتر"}
-        makeup_name = makeup_names_ar.get(payload.makeup_type, "المكياج")
-        
-        expert_prompt = f"{BASE_PHILOSOPHY}\nالتاريخ: [{history_context}]\nالعميلة جربت '{makeup_name}'. حللي كيف اندمج اللون وقدمي نصيحة."
-        contents = [Image.open(io.BytesIO(base64.b64decode(result_base64.split(",")[1]))), expert_prompt]
-                
-        res = robust_generate(payload.client_api_key, contents, VISION_MODELS)
-        save_to_db(payload.phone, f"محاكاة {makeup_name}", res, result_base64, payload.product_image)
-
-        return {"status": "success", "result_image": result_base64, "simulation_result": res, "face_detected": face_found}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/craft_perfume")
-async def craft_perfume(payload: PerfumeCraftPayload):
-    try:
-        inv = get_inventory()
-        brand_catalog = get_brand_catalog()
-        
-        available_oils = []
-        if not inv.empty and 'الصنف' in inv.columns:
-            oils_df = inv[inv['الصنف'].astype(str).str.contains("SAVVY|PARFUME OIL", case=False, na=False)]
-            for _, row in oils_df.head(60).iterrows():
-                name = str(row.get('الصنف', '')).strip()
-                # 🎯 السر هنا: استبدلنا الدالة المكسورة بالدالة المنيعة clean_qty_value
-                price = clean_qty_value(row.get('سعر1 كارت', 0))
-                if price > 0: available_oils.append(f"{name} (السعر: {price} ج.م/للجرام)")
-        
-        oils_list_text = " \n ".join(available_oils) if available_oils else "قاعدة الأسعار قيد التحديث."
-        history_context = get_history_from_db(payload.phone)
-        
-        perfume_prompt = (
-            f"{BASE_PHILOSOPHY}\nالتاريخ التراكمي: [{history_context}]\n"
-            f"ملاحظة هامة لك: أنت تملك أداة اسمها read_local_file، إذا طلب العميل قراءة تركيبة من ملف PDF أو نصي موجود على السيرفر قم باستدعائها تلقائياً.\n\n"
-            f"رسالة العميل: '{payload.client_message}'\n\n"
-            f"--- القوائم ---\n1. [زيوت التركيب الخام بأسعارها للتركيب فقط]:\n{oils_list_text}\n\n"
-            f"2. [أرشيف عطور Royal Elchim الجاهزة للترشيح الجاهز فقط]:\n{brand_catalog}\n-----------------\n\n"
-            f"المهام بصرامة:\n"
-            f"1. استنتجي البصمة الوجدانية للعميل واربطيها بقاعدة العطر الأساسي ROYAL E.K.A.\n"
-            f"2. صممي تركيبة لزجاجة 50 مل باستخدام [زيوت التركيب الخام] فقط. واربطيها ببرج فلكي وحيوان روحي.\n"
-            f"3. احسبي تكلفة الزيوت، والمثبت (1 جم لكل 5 جم زيت بسعر 3 ج.م)، والكحول (0.5 ج.م للجرام).\n"
-            f"4. يُمنع منعاً باتاً ترشيح أي زيت خام كعطر جاهز. يجب أن ترشحي عطراً جاهزاً مأخوذاً حصرياً وبالنص من [أرشيف عطور Royal Elchim الجاهزة]. اشرحي لماذا يناسب شخصيته كبديل فوري.\n"
-            f"5. كوني كائناً حياً صديقاً."
-        )
-
-        res = robust_generate(payload.client_api_key, [perfume_prompt], TEXT_MODELS)
-        save_to_db(payload.phone, "تصميم عطر ملكي شامل", f"الطلب: {payload.client_message}\n\nالتركيبة: {res}")
-        return {"status": "success", "answer": res, "diagnosis": res}
-    except Exception as e:
-        print(f"Craft Perfume Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 7860))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+async def simulate_makeup(payload
