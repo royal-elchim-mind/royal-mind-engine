@@ -3,80 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Elchim Luxury Mind</title>
+    <title>Royal Elchim - الوعي الجمالي الشامل</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #fdfdfd; font-family: 'Times New Roman', serif; padding-bottom: 90px; }
-        .gold-text { color: #b58900; font-weight: bold; }
-        .glass-card { background: white; border: 1px solid #e5b82c; border-radius: 25px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .gold-btn { background: linear-gradient(45deg, #b58900, #e5b82c); color: white; border: none; border-radius: 12px; width: 100%; padding: 15px; font-weight: bold; transition: 0.3s; }
-        .gold-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(181,137,0,0.3); }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #eee; z-index: 2000; }
-        .nav-item { text-align: center; color: #888; cursor: pointer; font-size: 0.75rem; flex: 1; }
-        .nav-item.active { color: #b58900; }
-        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; display: block; }
-        .app-screen { display: none; animation: fadeIn 0.4s; } .app-screen.active { display: block; }
+        @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        body { 
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #d4fc79, #96e6a1, #fff1eb, #f1eefc); 
+            background-size: 300% 300%; animation: aurora 12s ease infinite; color: #1a1a2e;
+            font-family: 'Times New Roman', serif; padding-bottom: 90px; min-height: 100vh; overflow-x: hidden;
+        }
+        .gold-text { color: #b58900; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); font-weight: bold; }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(181, 137, 0, 0.3); border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .gold-btn { background: linear-gradient(45deg, #b58900, #e5b82c, #b58900); color: #fff; font-weight: bold; border: none; border-radius: 12px; padding: 12px; transition: 0.3s; width: 100%; }
+        .gold-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(181,137,0,0.4); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-top: 1px solid rgba(181, 137, 0, 0.4); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #555577; cursor: pointer; flex: 1; font-size: 0.75rem; transition: 0.3s; }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: #b58900; transform: translateY(-3px); }
+        .app-screen { display: none; animation: fadeIn 0.5s; } .app-screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .preview-box { border: 2px dashed #b58900; border-radius: 15px; padding: 10px; min-height: 120px; margin-top: 10px; text-align: center; background: #fffaf0; }
+        .preview-box { border: 2px dashed #b58900; border-radius: 15px; padding: 10px; min-height: 120px; background: rgba(255,255,255,0.5); }
         .preview-box img { max-width: 100%; border-radius: 10px; max-height: 180px; }
-        #authOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.98); z-index:9999; display:flex; justify-content:center; align-items:center; }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px;">
-            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px;">
-            <h4 class="gold-text mt-3">بوابة الهوية الملكية</h4>
-            <input type="tel" id="pInp" class="form-control text-center my-3 fw-bold" placeholder="رقم الهاتف">
-            <button class="gold-btn" onclick="login()">دخول القصر</button>
+            <img src="logo.jpg" style="max-width: 120px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;">
+            <h4 class="gold-text">بوابة الهوية الملكية</h4>
+            <input type="tel" id="royalPhoneInput" class="form-control text-center my-4 fw-bold" placeholder="رقم هاتف العميل">
+            <button class="gold-btn" onclick="authenticateUser()">دخول القصر الملكي</button>
         </div>
     </div>
 
     <div class="container pt-4 text-center">
-        <img src="logo.jpg" style="max-width: 70px; border-radius: 50%; border: 1px solid #b58900;">
-        <h6 class="gold-text mt-2">Royal Elchim Luxury Engine</h6>
+        <img src="logo.jpg" style="max-width: 80px; border-radius: 50%; border: 1px solid #b58900;">
+        <h6 class="gold-text mt-2">Royal Elchim Luxury Mind</h6>
+        <p class="small text-muted" id="userDisplay"></p>
     </div>
 
     <div class="container mt-3">
         <div id="screen-simulation" class="app-screen active">
             <div class="glass-card">
-                <h5 class="text-center gold-text mb-3"><i class="fa-solid fa-wand-magic-sparkles"></i> مختبر الجمال والذكاء</h5>
+                <h5 class="text-center gold-text mb-3"><i class="fa-solid fa-wand-magic-sparkles"></i> مختبر الجمال والواقع المعزز</h5>
                 
                 <select id="masterMode" class="form-select mb-3 fw-bold text-center border-warning">
-                    <optgroup label="المكياج والعلاج">
+                    <optgroup label="المكياج والعلاجات">
                         <option value="lenses">💎 عدسات ملكية (من صورة موديل)</option>
                         <option value="lips">💄 أحمر شفاه ملكي</option>
                         <option value="eyeshadow">👁️ ظلال عيون سحرية</option>
                         <option value="foundation">🎭 علاج ونحت البشرة</option>
+                        <option value="blush">🌸 أحمر خدود (Blush)</option>
                     </optgroup>
-                    <optgroup label="تصميم الشعر">
-                        <option value="hair_custom">📸 دمج قصة من صورة (خارجي)</option>
+                    <optgroup label="تصميم وقص الشعر">
+                        <option value="hair_custom">📸 دمج قصة من صورة خارجية</option>
                         <option value="hair_preset">💇 قصات رويال الجاهزة</option>
                     </optgroup>
                 </select>
 
                 <div class="row">
                     <div class="col-6">
-                        <label class="btn btn-outline-dark btn-sm w-100 mb-1"><i class="fa-solid fa-user"></i> وجهكِ<input type="file" hidden onchange="pre(this, 'uPre', 'uB64')"></label>
+                        <label class="btn btn-outline-dark btn-sm w-100 mb-1">وجهكِ سيلفي<input type="file" hidden onchange="pre(this, 'uPre', 'uB64')"></label>
                         <div id="uPre" class="preview-box"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-dark btn-sm w-100 mb-1"><i class="fa-solid fa-image"></i> القصة/المنتج<input type="file" hidden onchange="pre(this, 'pPre', 'pB64')"></label>
+                        <label class="btn btn-outline-dark btn-sm w-100 mb-1">القصة/الصبغة<input type="file" hidden onchange="pre(this, 'pPre', 'pB64')"></label>
                         <div id="pPre" class="preview-box"></div>
                     </div>
                 </div>
 
                 <button class="gold-btn mt-4" onclick="runSim()">إطلاق المحاكاة الوجدانية</button>
-                <div id="simRes" class="mt-3 p-3 bg-light rounded small border-start border-warning border-4" style="display:none; white-space: pre-line; line-height: 1.6;"></div>
+                <div id="simRes" class="mt-3 p-3 rounded small border-start border-warning border-4" style="display:none; background:white; white-space:pre-line;"></div>
             </div>
         </div>
 
         <div id="screen-search" class="app-screen">
             <div class="glass-card">
                 <h5 class="gold-text mb-3 text-center"><i class="fa-solid fa-search"></i> استعلام الجرد والموقع</h5>
-                <input type="text" class="form-control text-center py-2" placeholder="ابحث عن صنف..." oninput="doSearch(this.value)">
+                <input type="text" class="form-control text-center py-2" placeholder="ابحث عن صنف رويال..." oninput="doSearch(this.value)">
                 <div id="searchRes" class="mt-3"></div>
             </div>
         </div>
@@ -84,40 +91,44 @@
         <div id="screen-perfume" class="app-screen">
             <div class="glass-card">
                 <h5 class="gold-text mb-3 text-center"><i class="fa-solid fa-flask"></i> الخيميائي الكيميائي</h5>
-                <textarea id="perfInp" class="form-control mb-3" rows="4" placeholder="صفي روحكِ العطرية..."></textarea>
-                <button class="gold-btn" onclick="runPerfume()">تصميم العطر الملكي</button>
-                <div id="perfRes" class="mt-3 p-3 bg-light rounded small" style="display:none;"></div>
+                <textarea id="perfInp" class="form-control mb-3" rows="4" placeholder="صفي روحكِ العطرية، لابتكار التوقيع الكيميائي الخاص بكِ..."></textarea>
+                <button class="gold-btn" onclick="runPerfume()">تصميم العطر والحيوان الروحي</button>
+                <div id="perfRes" class="mt-3 p-3 rounded small" style="display:none; background:white;"></div>
             </div>
         </div>
 
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
-                <h5 class="gold-text mb-3 text-center"><i class="fa-solid fa-server"></i> السجلات المركزية</h5>
+                <h5 class="gold-text mb-3 text-center"><i class="fa-solid fa-server"></i> السجلات المركزية للوعي</h5>
                 <div id="vaultRes"></div>
             </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="tab('simulation')"><i class="fa-solid fa-wand-magic-sparkles"></i><span>المختبر</span></div>
-        <div class="nav-item" onclick="tab('search')"><i class="fa-solid fa-search"></i><span>البحث</span></div>
-        <div class="nav-item" onclick="tab('perfume')"><i class="fa-solid fa-flask"></i><span>الخيميائي</span></div>
-        <div class="nav-item" onclick="tab('vault')"><i class="fa-solid fa-server"></i><span>السجلات</span></div>
+        <div class="nav-item active" onclick="tab('simulation')"><i class="fa-solid fa-wand-magic-sparkles"></i>المختبر</div>
+        <div class="nav-item" onclick="tab('search')"><i class="fa-solid fa-search"></i>البحث</div>
+        <div class="nav-item" onclick="tab('perfume')"><i class="fa-solid fa-flask"></i>الخيميائي</div>
+        <div class="nav-item" onclick="tab('vault')"><i class="fa-solid fa-server"></i>السجلات</div>
     </div>
 
     <script>
         let imgs = { uB64: null, pB64: null };
         const API = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
-        function login() {
-            let p = document.getElementById('pInp').value;
-            if(p.length < 5) return;
+        function authenticateUser() {
+            let p = document.getElementById('royalPhoneInput').value;
+            if(p.length < 5) return alert("يرجى إدخال رقم صحيح.");
             localStorage.setItem('royal_user_phone', p);
             document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userDisplay').innerText = "العميل الملكي: " + p;
             renderVault();
         }
 
-        if(localStorage.getItem('royal_user_phone')) document.getElementById('authOverlay').style.display = 'none';
+        if(localStorage.getItem('royal_user_phone')) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userDisplay').innerText = "العميل الملكي: " + localStorage.getItem('royal_user_phone');
+        }
 
         function pre(input, id, key) {
             const reader = new FileReader();
@@ -130,7 +141,7 @@
 
         async function runSim() {
             const out = document.getElementById('simRes');
-            out.style.display = 'block'; out.innerHTML = "جاري التحليل الكيميائي والوجداني...";
+            out.style.display = 'block'; out.innerHTML = "<p class='text-center gold-text'>جاري التحليل الكيميائي والوجداني...</p>";
             const res = await fetch(`${API}/api/simulate_master`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -141,7 +152,7 @@
             });
             const d = await res.json();
             if(d.status === 'success') {
-                out.innerHTML = `<img src="${d.result_image}" class="img-fluid rounded mb-3 shadow">` + d.simulation_result;
+                out.innerHTML = `<img src="${d.result_image}" class="img-fluid rounded mb-3 shadow">` + `<div class='p-2'>${d.simulation_result}</div>`;
                 renderVault();
             }
         }
@@ -150,12 +161,12 @@
             if(q.length < 2) return;
             const res = await fetch(`${API}/api/search?query=${q}`);
             const d = await res.json();
-            document.getElementById('searchRes').innerHTML = d.data.map(i => `<div class="p-3 border-bottom">${i.name}<br><b class="gold-text">${i.price} ج.م</b></div>`).join('');
+            document.getElementById('searchRes').innerHTML = d.data.map(i => `<div class="p-3 border-bottom border-warning-subtle">${i.name}<br><b class="gold-text">${i.price} ج.م</b></div>`).join('');
         }
 
         async function runPerfume() {
             const out = document.getElementById('perfRes');
-            out.style.display = 'block'; out.innerHTML = "الخيميائي يزن المكونات بالجرامات...";
+            out.style.display = 'block'; out.innerHTML = "الخيميائي يحلل روحكِ الآن...";
             const res = await fetch(`${API}/api/craft_perfume`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ client_message: document.getElementById('perfInp').value, phone: localStorage.getItem('royal_user_phone') })
@@ -168,10 +179,11 @@
             const res = await fetch(`${API}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`);
             const d = await res.json();
             document.getElementById('vaultRes').innerHTML = d.data.map(i => `
-                <div class="mb-3 p-3 bg-light rounded text-end">
-                    <small class="gold-text">${i.type} - ${i.date}</small>
-                    ${i.selfie ? `<img src="${i.selfie}" class="d-block my-2" style="max-width:100px;">` : ''}
-                    <div style="font-size:0.85rem;">${i.text}</div>
+                <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4">
+                    <div class="d-flex justify-content-between gold-text small mb-2"><span>${i.type}</span><span>${i.date}</span></div>
+                    <div class="small fw-bold text-secondary mb-1">أنتِ: ${i.userText || "..."}</div>
+                    <div class="small fw-bold mb-2">رويال مايند: ${i.aiText}</div>
+                    ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-width:120px;">` : ''}
                 </div>
             `).join('');
         }
