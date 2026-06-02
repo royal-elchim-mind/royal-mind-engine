@@ -173,7 +173,8 @@
     </div>
 
     <script>
-        const BACKEND_URL = window.location.origin.includes('localhost') ? 'http://127.0.0.1:7860' : window.location.origin;
+        // تغيير الرابط هنا ليكون رابط الـ Backend الخاص بـ Hugging Face مباشرة
+        const BACKEND_URL = 'https://royal-elchim-newmind-royal-mind-engine.hf.space';
         
         async function apiFetch(endpoint, options = {}) {
             try {
@@ -194,7 +195,6 @@
             const cont = document.getElementById('searchResultsContainer');
             cont.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث...</p>";
             try {
-                // التأكد من استخدام GET للبحث
                 const d = await apiFetch(`/api/search?query=${encodeURIComponent(query)}`);
                 if(d.status === 'success' && d.data.length > 0) {
                     cont.innerHTML = d.data.map(item => `
@@ -206,10 +206,6 @@
                 } else cont.innerHTML = "<p class='text-center text-muted'>لا يوجد نتائج.</p>";
             } catch(e) { cont.innerHTML = `<p class='text-danger text-center'>${e.message}</p>`; }
         }
-
-        // تحديث باقي الدوال لاستخدام apiFetch الموحد لضمان التتبع
-        async function runDiagnosis() { /* ... مماثل ... */ }
-        // (تم دمج منطق التحقق في apiFetch للوصول لمصدر الـ 405)
     </script>
 </body>
 </html>
