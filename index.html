@@ -87,7 +87,7 @@
     <!-- شاشة تسجيل الدخول المبدئية -->
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px; border-color: rgba(181, 137, 0, 0.6); box-shadow: 0 15px 50px rgba(0,0,0,0.3);">
-            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;">
+            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/100'">
             <h4 class="gold-text">بوابة الهوية الملكية</h4>
             <p class="text-white-50 small">أدخل رقم الهاتف أو استخدم بصمة وجهك</p>
             
@@ -101,7 +101,7 @@
     <!-- الرأس الرئيسي مع معلومات الحساب -->
     <div class="container pt-4 text-center">
         <div id="mainRoyalLogo" class="royal-logo-container">
-            <img src="logo.jpg" alt="Royal Elchim Logo">
+            <img src="logo.jpg" alt="Royal Elchim Logo" onerror="this.src='https://via.placeholder.com/100'">
         </div>
         <h3 class="gold-text fw-bold mb-0 mt-2">ROYAL ELCHIM</h3>
         <p class="small text-muted mt-1 fw-bold mb-1" id="userDisplay">نظام الإدارة والوعي الجمالي الشامل</p>
@@ -116,7 +116,7 @@
                 <div class="input-group mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.15); border-radius: 8px;">
                     <button class="btn" style="background: rgba(212, 175, 55, 0.15); border: 1px solid #b58900; color: #b58900;" onclick="startVoiceRecognition('royalSearchInput', this)"><i class="fa-solid fa-microphone"></i></button>
                     <input type="text" id="royalSearchInput" class="form-control text-center py-2" placeholder="ابحث بصوتك أو اكتب اسم صنف..." oninput="debounceSearch(this.value)">
-                    <button class="btn gold-btn m-0" style="width: auto; border-radius: 8px 0 0 8px;" onclick="doSearch(document.getElementById('royalSearchInput').value)"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <button class="btn gold-btn m-0" style="width: auto; border-radius: 8px 0 0 8px;" onclick="performRoyalSearch(document.getElementById('royalSearchInput').value)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
                 <div id="searchResultsContainer"></div>
             </div>
@@ -277,7 +277,6 @@
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
-        let searchResultsCached = []; 
         let currentUtterance = null;
         
         // المحرك الصوتي المطور للقراءة (TTS)
@@ -355,9 +354,6 @@
             parentElement.appendChild(btn);
         }
 
-        // ==========================================
-        // 🚀 تم إصلاح هذه النقطة لتوجيه الطلبات للسيرفر الصحيح دائماً
-        // ==========================================
         const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
         let mediaStream = null;
@@ -488,57 +484,77 @@
             recognition.start();
         }
 
-        function debounceSearch(val) {
-            clearTimeout(searchTimer);
-            if(val.length < 2) return;
-            searchTimer = setTimeout(() => doSearch(val), 400);
+        async function apiFetch(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    const errText = await response.text();
+                    console.error(`API Error [${response.status}]:`, errText);
+                    throw new Error(`خطأ سيرفر (${response.status})`);
+                }
+                return await response.json();
+            } catch (err) {
+                console.error("Fetch Exception:", err);
+                throw err;
+            }
         }
 
-        async function doSearch(q) {
-            const container = document.getElementById('searchResultsContainer');
-            container.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري جلب الأرصدة الحقيقية وفحص الكتالوج...</p>";
+        function debounceSearch(val) { clearTimeout(searchTimer); if(val.length < 2) return; searchTimer = setTimeout(() => performRoyalSearch(val), 500); }
+        
+        async function performRoyalSearch(query) {
+            const cont = document.getElementById('searchResultsContainer');
+            cont.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
-                const d = await res.json();
+                const d = await apiFetch(`/api/search?query=${encodeURIComponent(query)}`);
                 if(d.status === 'success' && d.data.length > 0) {
-                    searchResultsCached = d.data; 
-                    container.innerHTML = d.data.map((item, index) => `
-                        <div class="glass-card mb-2 p-3 text-end">
+                    cont.innerHTML = d.data.map(item => `
+                        <div class="glass-card mb-3 p-3 text-end" style="border-right: 4px solid #b58900;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="gold-text fw-bold" style="font-size:1.1rem;">${item.name}</span>
-                                <button class="btn btn-sm btn-outline-warning fw-bold" onclick="addtoInvoice(${index})"><i class="fa-solid fa-plus"></i> لفاتورتكِ</button>
+                                <button class="btn btn-sm btn-outline-warning fw-bold" onclick='addtoInvoice(\"${encodeURIComponent(JSON.stringify(item))}\")'>للفاتورة <i class="fa-solid fa-plus"></i></button>
                             </div>
-                            <a href="${item.link}" target="_blank" class="btn btn-sm gold-btn mt-2 py-1"><i class="fa-solid fa-cart-shopping"></i> اقتناء فوري من الموقع</a>
+                            
+                            <div class="mt-2 p-2 rounded" style="background: rgba(0,0,0,0.03);">
+                                <div class="d-flex justify-content-between small mb-1"><span>📍 الأقصر سنتر اللوتس التجاري:</span> <span class="fw-bold text-dark">${item.luxor_qty || 0}</span></div>
+                                <div class="d-flex justify-content-between small mb-1"><span>📍 royal elchim marwa:</span> <span class="fw-bold text-dark">${item.marwa_qty || 0}</span></div>
+                                <div class="d-flex justify-content-between small mb-1"><span>🔵 hurgada:</span> <span class="fw-bold text-dark">${item.hurgada_qty || 0}</span></div>
+                                <div class="d-flex justify-content-between small mb-1"><span>🌐 رويال الكيم أونلاين:</span> <span class="fw-bold text-dark">${item.online_qty || 0}</span></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-3 align-items-center">
+                                <div><small class="text-muted d-block">باركود: <b>${item.barcode}</b></small><span class="h5 gold-text fw-bold mt-1 d-block">${item.price1} ج.م</span></div>
+                                ${item.link ? `<a href="${item.link}" target="_blank" class="btn btn-sm gold-btn py-2 px-3" style="max-width:110px;"><i class="fa-solid fa-bag-shopping"></i> اقتناء</a>` : ''}
+                            </div>
                         </div>
                     `).join('');
-                } else { 
-                    container.innerHTML = "<p class='text-muted text-center'>لا توجد أصناف مطابقة لطلبكِ.</p>"; 
-                }
-            } catch(e) {
-                container.innerHTML = "<p class='text-danger text-center'>خطأ في الاتصال بالخادم المركزي.</p>";
-            }
+                } else cont.innerHTML = "<p class='text-center text-muted'>لا يوجد نتائج.</p>";
+            } catch(e) { cont.innerHTML = `<p class='text-danger text-center'>${e.message}</p>`; }
         }
 
-        function addtoInvoice(index) {
-            const item = searchResultsCached[index];
-            if(!item) return;
-            
-            const cleanName = item.name.replace(/<\/?[^>]+(>|$)/g, "");
-            const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
-            if(exists) {
-                exists.qty += 1; 
-            } else { 
-                activeInvoiceItems.push({
-                    name: cleanName,
-                    price1: item.price,
-                    qty: 1,
-                    barcode: item.barcode,
-                    is_fixed: item.is_fixed
-                }); 
+        function addtoInvoice(encodedItem) {
+            try {
+                const item = JSON.parse(decodeURIComponent(encodedItem));
+                if(!item) return;
+
+                const cleanName = item.name.replace(/<\/?[^>]+(>|$)/g, "");
+                const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
+                if(exists) {
+                    exists.qty += 1; 
+                } else { 
+                    activeInvoiceItems.push({
+                        name: cleanName,
+                        price1: item.price1 || item.price,
+                        qty: 1,
+                        barcode: item.barcode,
+                        is_fixed: item.is_fixed
+                    }); 
+                }
+                showRoyalNotification("تم إدراج الصنف بنجاح في فاتورتكِ الجارية.");
+                renderInvoiceDOM(); 
+                calculateLiveInvoice();
+            } catch(e) {
+                console.error("Error adding item to invoice:", e);
             }
-            showRoyalNotification("تم إدراج الصنف بنجاح في فاتورتكِ الجارية.");
-            renderInvoiceDOM(); 
-            calculateLiveInvoice();
         }
 
         function renderInvoiceDOM() {
@@ -583,7 +599,7 @@
             }
             try {
                 const secret = document.getElementById('vipSecretCode').value.trim();
-                const res = await fetch(`${BACKEND_URL}/api/invoice/calculate`, {
+                const d = await apiFetch('/api/invoice/calculate', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -591,8 +607,7 @@
                         secret_code: secret 
                     })
                 });
-                const d = await res.json();
-                if(d.status === 'success') {
+                if(d.status === 'success' || d.tier) {
                     let tierText = "الكارت الأول (السعر الأساسي)";
                     if (d.tier === 2) tierText = "الكارت الثاني (خصم 10%)";
                     else if (d.tier === 3) tierText = "الكارت الثالث (خصم 15%)";
@@ -617,7 +632,7 @@
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-wand-magic-sparkles fa-spin'></i> جاري ضبط مصفوفات النحت المعزز والواقع الافتراضي...</p>";
             try {
                 const mode = document.getElementById('masterMode').value;
-                const res = await fetch(`${BACKEND_URL}/api/simulate_master`, {
+                const d = await apiFetch('/api/simulate_master', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -627,7 +642,6 @@
                         phone: localStorage.getItem('royal_user_phone') || "01000000000"
                     })
                 });
-                const d = await res.json();
                 if(d.status === 'success') { 
                     out.innerHTML = `
                         <div class="text-center mb-3">
@@ -653,7 +667,7 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يمزج الخيميائي الملكي الجرامات الفلكية ويفك طلاسم الهالة الروحية...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/craft_perfume`, {
+                const d = await apiFetch('/api/craft_perfume', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -661,7 +675,6 @@
                         phone: localStorage.getItem('royal_user_phone') 
                     })
                 });
-                const d = await res.json(); 
                 out.innerHTML = d.answer; 
                 appendListenButton(out, d.answer);
                 renderVault();
@@ -677,7 +690,7 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> تستوعب رويال مايند الوجدان وتُقطّر الحكمة الحياتية...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
+                const d = await apiFetch('/api/diagnose', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -685,7 +698,6 @@
                         phone: localStorage.getItem('royal_user_phone') 
                     })
                 });
-                const d = await res.json(); 
                 out.innerHTML = d.diagnosis; 
                 appendListenButton(out, d.diagnosis);
                 renderVault();
@@ -701,7 +713,7 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول الجمالي ونحت الملامح...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
+                const d = await apiFetch('/api/diagnose', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -709,7 +721,6 @@
                         phone: localStorage.getItem('royal_user_phone') 
                     })
                 });
-                const d = await res.json(); 
                 out.innerHTML = d.diagnosis; 
                 appendListenButton(out, d.diagnosis);
                 renderVault();
@@ -722,8 +733,7 @@
             const phone = localStorage.getItem('royal_user_phone');
             if(!phone) return;
             try {
-                const res = await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`);
-                const d = await res.json();
+                const d = await apiFetch(`/api/vault?phone=${phone}`);
                 if(d.status === 'success' && d.data.length > 0) {
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
@@ -787,8 +797,7 @@
             if(!confirmed) return;
             try {
                 const phone = localStorage.getItem('royal_user_phone');
-                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}/image?phone=${phone}`, { method: 'DELETE' });
-                const d = await res.json();
+                const d = await apiFetch(`/api/vault/${recordId}/image?phone=${phone}`, { method: 'DELETE' });
                 if (d.status === 'success') {
                     showRoyalNotification("تم مسح الصورة بنجاح مع الاحتفاظ بالسجل.");
                     renderVault();
@@ -805,8 +814,7 @@
             if(!confirmed) return;
             try {
                 const phone = localStorage.getItem('royal_user_phone');
-                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}?phone=${phone}`, { method: 'DELETE' });
-                const d = await res.json();
+                const d = await apiFetch(`/api/vault/${recordId}?phone=${phone}`, { method: 'DELETE' });
                 if (d.status === 'success') {
                     showRoyalNotification("تم الحذف بنجاح.");
                     renderVault();
@@ -822,7 +830,8 @@
             const confirmed = await askRoyalConfirmation("تأكيد فناء الذاكرة", "هل أنت متأكد من محو كامل لذاكرة الوعي وفناء السجلات الملكية الخاصة بهذا الهاتف للأبد؟");
             if(!confirmed) return;
             try {
-                await fetch(`${BACKEND_URL}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`, { method: 'DELETE' });
+                const phone = localStorage.getItem('royal_user_phone');
+                await apiFetch(`/api/vault?phone=${phone}`, { method: 'DELETE' });
                 showRoyalNotification("تم فناء ومسح سجلات الذاكرة بالكامل من الخوادم.");
                 renderVault();
             } catch(e) {
@@ -875,11 +884,11 @@
             if (cameraPurpose === 'login') {
                 showRoyalNotification("جارٍ البحث في مصفوفة الهوية الملكية...");
                 try {
-                    const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    const d = await apiFetch('/api/auth/face', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ selfie: b64 })
                     });
-                    const d = await res.json();
                     if (d.status === 'success') {
                         localStorage.setItem('royal_user_phone', d.phone);
                         document.getElementById('authOverlay').style.display = 'none';
@@ -891,11 +900,11 @@
                         let fallbackPhone = prompt("وجه جديد! يرجى كتابة رقم الهاتف لربطه بالملامح الملكية تلقائياً:");
                         if (fallbackPhone && fallbackPhone.trim().length >= 5) {
                             showRoyalNotification("جاري تسجيل وبصم الوجه...");
-                            const regRes = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            const regD = await apiFetch('/api/auth/face', {
+                                method: 'POST', 
+                                headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ phone: fallbackPhone.trim(), selfie: b64 })
                             });
-                            const regD = await regRes.json();
                             if (regD.status === 'success') {
                                 localStorage.setItem('royal_user_phone', regD.phone);
                                 document.getElementById('authOverlay').style.display = 'none';
@@ -914,11 +923,11 @@
                 const phone = localStorage.getItem('royal_user_phone');
                 showRoyalNotification("جارٍ استخلاص التوقيع الهندسي لبصمتكِ...");
                 try {
-                    const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    const d = await apiFetch('/api/auth/face', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ phone: phone, selfie: b64 })
                     });
-                    const d = await res.json();
                     if (d.status === 'success') {
                         showRoyalNotification("تم توثيق وبصم ملامح وجهك الملكي بنجاح في السجلات!");
                     } else {
