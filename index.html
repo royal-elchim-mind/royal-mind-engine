@@ -278,6 +278,75 @@
         let confirmPromiseResolver = null;
         let searchResultsCached = []; // لحفظ كائنات الأصناف المستعلمة لتجنب مشاكل الاقتباس
         
+        let currentUtterance = null;
+        
+        // محرك القراءة والترتيل الملكي المدمج
+        function speakText(text, btnElement) {
+            if (!text) return;
+            
+            // إذا كان الصوت يعمل بالفعل، نقوم بإيقافه فوراً لتبديل الحالة
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                if (currentUtterance && currentUtterance.btn === btnElement) {
+                    btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+                    btnElement.classList.remove('btn-danger');
+                    btnElement.classList.add('btn-outline-warning');
+                    return;
+                }
+            }
+
+            // تنظيف النص من أي وسوم HTML قبل القراءة لضمان نطق فصيح وسليم
+            const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'ar-EG'; // تفعيل النطق بالكنة العربية الفصحى الفخمة
+            utterance.rate = 0.88;    // سرعة وقورة وهادئة تليق بالبراند الملكي
+
+            // محاولة اختيار أفضل صوت متوفر باللغة العربية بجهاز العميل
+            const voices = window.speechSynthesis.getVoices();
+            const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
+            if (arabicVoice) utterance.voice = arabicVoice;
+
+            utterance.onstart = () => {
+                btnElement.innerHTML = '<i class="fa-solid fa-square-stop"></i> إيقاف الاستماع';
+                btnElement.classList.remove('btn-outline-warning');
+                btnElement.classList.add('btn-danger');
+            };
+
+            utterance.onend = () => {
+                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+                btnElement.classList.remove('btn-danger');
+                btnElement.classList.add('btn-outline-warning');
+            };
+
+            utterance.onerror = () => {
+                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+                btnElement.classList.remove('btn-danger');
+                btnElement.classList.add('btn-outline-warning');
+            };
+
+            utterance.btn = btnElement;
+            currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // دالة مريحة لزر الاستماع لإدراجها تلقائياً بالردود
+        function appendListenButton(parentElement, textToRead) {
+            if (!parentElement) return;
+            const existing = parentElement.querySelector('.royal-listen-btn');
+            if (existing) existing.remove();
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-outline-warning d-block ms-auto mt-3 fw-bold royal-listen-btn';
+            btn.style.borderRadius = '8px';
+            btn.style.border = '1px solid #b58900';
+            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                speakText(textToRead, btn);
+            };
+            parentElement.appendChild(btn);
+        }
+
         // التحقق الذكي لعنوان الخادم: إذا كان العميل على الدومين الرئيسي لبراند، يتم توجيه الاتصال مباشرة لخادم بايثون على Hugging Face
         const BACKEND_URL = (window.location.origin.includes("royalelchim.app") || window.location.origin.includes("localhost")) 
             ? "https://royal-elchim-newmind-royal-mind-engine.hf.space" 
@@ -573,8 +642,10 @@
                         <div class="text-center mb-3">
                             <img src="${d.result_image}" class="img-fluid rounded border border-warning shadow" style="max-height: 280px;">
                         </div>
-                        <div class="text-end p-2">${d.simulation_result}</div>
+                        <div id="simTextContainer" class="text-end p-2">${d.simulation_result}</div>
                     `; 
+                    const simTextContainer = document.getElementById('simTextContainer');
+                    appendListenButton(simTextContainer, d.simulation_result);
                     renderVault(); 
                 } else {
                     out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية. يرجى المحاولة بصورة أوضح.</p>";
@@ -601,6 +672,7 @@
                 });
                 const d = await res.json(); 
                 out.innerHTML = d.answer; 
+                appendListenButton(out, d.answer);
                 renderVault();
             } catch(e) {
                 out.innerHTML = "<p class='text-danger'>فشل الخيميائي في مزج النوتات الحالية.</p>";
@@ -624,6 +696,7 @@
                 });
                 const d = await res.json(); 
                 out.innerHTML = d.diagnosis; 
+                appendListenButton(out, d.diagnosis);
                 renderVault();
             } catch(e) {
                 out.innerHTML = "<p class='text-danger'>فشل الاتصال بالمستشار الوجداني.</p>";
@@ -647,6 +720,7 @@
                 });
                 const d = await res.json(); 
                 out.innerHTML = d.diagnosis; 
+                appendListenButton(out, d.diagnosis);
                 renderVault();
             } catch(e) {
                 out.innerHTML = "<p class='text-danger'>فشل محرك التحليل الجمالي.</p>";
@@ -661,18 +735,25 @@
                 const res = await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    document.getElementById('vaultRes').innerHTML = d.data.map(i => `
-                        <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
-                            <div class="d-flex justify-content-between gold-text small mb-2">
-                                <span>${i.type}</span>
-                                <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')"><i class="fa-solid fa-trash-can"></i> حذف السجل</span>
-                                <span>${i.date}</span>
+                    document.getElementById('vaultRes').innerHTML = d.data.map(i => {
+                        // إعداد الرد ليكون آمن وخالي من مشكلات اقتباس الجافا سكريبت عند تمريره لدالة النطق
+                        const safeText = i.aiText.replace(/[\/\\]/g, '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+                        return `
+                            <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
+                                <div class="d-flex justify-content-between gold-text small mb-2">
+                                    <span>${i.type}</span>
+                                    <div class="d-flex gap-2">
+                                        <span class="text-primary" style="cursor:pointer;" onclick="speakText('${safeText}', this)"><i class="fa-solid fa-volume-high"></i> استماع</span>
+                                        <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')"><i class="fa-solid fa-trash-can"></i> حذف</span>
+                                    </div>
+                                    <span>${i.date}</span>
+                                </div>
+                                <div class="small fw-bold text-secondary mb-1">الطلب العميل: ${i.userText || "..."}</div>
+                                <div class="small fw-bold mb-2 text-dark">رويال مايند: ${i.aiText}</div>
+                                ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-height:120px; border: 1px solid #b58900;">` : ''}
                             </div>
-                            <div class="small fw-bold text-secondary mb-1">الطلب العميل: ${i.userText || "..."}</div>
-                            <div class="small fw-bold mb-2 text-dark">رويال مايند: ${i.aiText}</div>
-                            ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-height:120px; border: 1px solid #b58900;">` : ''}
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
                     document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>لا توجد سجلات وعي أو ذاكرة محفوظة لهذا الهاتف بعد.</p>";
                 }
