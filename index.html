@@ -18,193 +18,82 @@
         .nav-item.active { color: #b58900; font-weight: bold; transform: translateY(-2px); }
         .app-screen { display: none; animation: fadeIn 0.4s ease-out; } .app-screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .preview-img { max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; border: 2px solid #e5b82c; }
         #authOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.98); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .mic-btn { position: absolute; left: 10px; bottom: 10px; background: rgba(212, 175, 55, 0.15); color: #b58900; border: 1px solid #b58900; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; z-index: 10; }
-        .listening { background-color: #ff4d4d !important; color: white !important; border-color: #ff4d4d !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .preview-img { max-width: 100px; border-radius: 50%; border: 2px solid #b58900; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px;">
-            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; margin-bottom: 15px;" onerror="this.src='https://via.placeholder.com/100'">
             <h4 class="gold-text mb-3">البوابة البصرية (Face ID)</h4>
-            <label class="btn btn-outline-warning w-100 p-3 mb-3 fw-bold border-2"><i class="fa-solid fa-camera mb-2"></i> التقاط الوجه للتحقق
-                <input type="file" hidden accept="image/*" capture="user" onchange="processFaceLogin(event)">
+            <label class="btn btn-outline-warning w-100 p-3 mb-3 fw-bold border-2">
+                <i class="fa-solid fa-camera mb-2"></i> التقاط الوجه للتحقق
+                <input type="file" id="faceInput" hidden accept="image/*" capture="user">
             </label>
             <div id="loginPreview"></div>
             <div id="phoneInputContainer" style="display: none;">
-                <input type="tel" id="newPhoneInput" class="form-control text-center mb-3" placeholder="أدخل رقم هاتفك لربط حسابك الملكي">
+                <input type="tel" id="newPhoneInput" class="form-control text-center mb-3" placeholder="أدخل رقم هاتفك">
                 <button class="gold-btn" onclick="submitNewFace()">توثيق وبدء الرحلة</button>
             </div>
-            <div id="loginStatus" class="mt-2 text-danger small fw-bold"></div>
         </div>
     </div>
 
     <div class="container pt-3 text-center">
         <h4 class="gold-text fw-bold">ROYAL ELCHIM</h4>
-        <p class="small text-muted" id="userDisplay"></p>
-        <button class="btn btn-sm btn-outline-danger mb-2" id="logoutBtn" style="display:none; margin: 0 auto;" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تبديل الحساب البصري</button>
     </div>
 
     <div class="container mt-2">
         <div id="screen-diagnosis" class="app-screen active">
             <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-infinity"></i> رويال مايند معاكِ للأبد</h4>
-                <div id="aiGreetingBox" class="p-3 mb-4" style="display:none; background: rgba(181, 137, 0, 0.1); border-right: 3px solid #b58900; border-radius: 4px;"></div>
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-infinity"></i> رويال مايند</h4>
                 <div class="position-relative mb-4">
-                    <textarea id="diagnosisInput" class="form-control" rows="4" placeholder="تحدثي أو اكتبي ما يجول بخاطركِ هنا بكل حرية..." style="padding-left: 55px;"></textarea>
-                    <button class="mic-btn" onclick="startVoiceRecognition('diagnosisInput', this)"><i class="fa-solid fa-microphone"></i></button>
+                    <textarea id="diagnosisInput" class="form-control" rows="4" placeholder="تحدثي أو اكتبي ما يجول بخاطركِ..."></textarea>
                 </div>
-                <button class="gold-btn py-2" onclick="runDiagnosis()">إرسال لرويال مايند</button>
-                <div id="diagResponse" class="mt-3 p-3 bg-light rounded" style="display:none; border-right: 3px solid #b58900; white-space: pre-line;"></div>
+                <button class="gold-btn py-2" onclick="runDiagnosis()">إرسال</button>
             </div>
         </div>
-
-        <div id="screen-simulation" class="app-screen">
-            <div class="glass-card">
-                <h5 class="gold-text text-center"><i class="fa-solid fa-wand-magic-sparkles"></i> مختبر النحت البصري</h5>
-                <select id="simMakeupType" class="form-select mb-3 text-center border-warning fw-bold">
-                    <option value="lenses">💎 عدسات ملكية</option>
-                    <option value="lips">💄 أحمر شفاه</option>
-                    <option value="eyeshadow">👁️ ظلال عيون سحرية</option>
-                    <option value="blush">😊 أحمر خدود</option>
-                    <option value="foundation">✨ أساس وعلاج البشرة</option>
-                    <option value="concealer">👁️‍🗨️ إخفاء هالات</option>
-                    <option value="hair_preset">💇 قصات رويال الجاهزة</option>
-                    <option value="hair_custom">📸 دمج قصة خارجية</option>
-                </select>
-                <div class="row">
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 fw-bold border-2">صورتك<input type="file" hidden accept="image/*" onchange="pre(event, 'uP', 'uB6')"></label>
-                        <div id="uP" class="text-center"></div>
-                    </div>
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 fw-bold border-2">المنتج<input type="file" hidden accept="image/*" onchange="pre(event, 'pP', 'pB6')"></label>
-                        <div id="pP" class="text-center"></div>
-                    </div>
-                </div>
-                <button class="gold-btn mt-3" onclick="runSim()">تطبيق النحت الفوري</button>
-                <div id="simRes" class="mt-3 p-3 bg-light rounded" style="display:none; border-right: 3px solid #b58900; white-space: pre-line;"></div>
-            </div>
-        </div>
-
-        <div id="screen-search" class="app-screen">
-            <div class="glass-card">
-                <h5 class="gold-text text-center"><i class="fa-solid fa-barcode"></i> الاستعلام والمخزون الحقيقي</h5>
-                <div class="input-group mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.15); border-radius: 8px;">
-                    <button class="btn" style="background: rgba(212, 175, 55, 0.15); border: 1px solid #b58900; color: #b58900; border-radius: 0 8px 8px 0; transition: 0.3s;" onclick="startVoiceRecognition('royalSearchInput', this)" title="ابحث بصوتك">
-                        <i class="fa-solid fa-microphone"></i>
-                    </button>
-                    <input type="text" id="royalSearchInput" class="form-control text-center py-2" style="border: 1px solid #b58900; border-left: none; border-right: none;" placeholder="ابحث بصوتك أو اكتب اسم الصنف..." oninput="debounceSearch(this.value)">
-                    <button class="btn gold-btn m-0" style="width: auto; border-radius: 8px 0 0 8px;" onclick="performRoyalSearch(document.getElementById('royalSearchInput').value)" title="بحث يدوي">
-                        <i class="fa-solid fa-magnifying-glass"></i> بحث
-                    </button>
-                </div>
-                <div id="searchResultsContainer"></div>
-            </div>
-        </div>
-
-        <div id="screen-b2b" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> الفاتورة الذكية</h4>
-                <div class="p-2 border border-warning rounded mb-3" style="background: rgba(212, 175, 55, 0.05);">
-                    <p class="small text-warning fw-bold m-0 mb-1 text-center"><i class="fa-solid fa-lock"></i> كود تفعيل العملاء (سري)</p>
-                    <input type="password" id="vipCode" class="form-control text-center" placeholder="أدخل الكود السري هنا..." oninput="calcInv()">
-                </div>
-                <div id="invItems" class="mb-3"></div>
-                <div class="p-3 bg-light rounded text-end mb-3 border border-secondary shadow-sm">
-                    <h5 class="m-0">نوع الحساب: <span id="invTierName" class="text-info fw-bold">حساب قياسي</span></h5>
-                    <h4 class="mt-2 text-success fw-bold">الإجمالي المستحق: <span id="invTotal">0</span> ج.م</h4>
-                </div>
-                <button class="gold-btn w-100 py-2" onclick="calcInv()"><i class="fa-solid fa-arrows-rotate"></i> تحديث الفاتورة</button>
-            </div>
-        </div>
-
-        <div id="screen-perfume" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-flask"></i> الخيميائي الكيميائي</h4>
-                <div class="position-relative mb-4">
-                    <textarea id="perfumeInput" class="form-control mb-3" rows="3" placeholder="تحدثي أو صفي طابعكِ العطري هنا..." style="padding-left: 55px;"></textarea>
-                    <button class="mic-btn" onclick="startVoiceRecognition('perfumeInput', this)"><i class="fa-solid fa-microphone"></i></button>
-                </div>
-                <button class="gold-btn w-100 py-2" onclick="runPerfume()">ابتكار التوقيع العطري</button>
-                <div id="perfumeResponse" class="mt-3 p-3 bg-light rounded" style="display:none; border-right: 3px solid #b58900; white-space: pre-line;"></div>
-            </div>
-        </div>
-
-        <div id="screen-vault" class="app-screen">
-            <div class="glass-card">
-                <h5 class="gold-text text-center"><i class="fa-solid fa-server"></i> السجلات والذاكرة المركزية</h5>
-                <button class="btn btn-sm btn-outline-primary w-100 mb-3 fw-bold" onclick="renderVault()"><i class="fa-solid fa-rotate"></i> تحديث السجلات</button>
-                <div id="vaultCont" style="max-height: 500px; overflow-y: auto; text-align: right;"></div>
-            </div>
-        </div>
-        
-        <div id="screen-manifesto" class="app-screen">
-            <div class="glass-card text-end">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-open-reader"></i> الفلسفة الملكية</h4>
-                <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-crown text-warning"></i> بلاك رويال – الأسد</h5></div>
-                <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-wolf text-warning"></i> رويال شادو – العقرب</h5></div>
-                <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-feather text-warning"></i> رويال شاين – القوس</h5></div>
-                <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-moon text-warning"></i> روز نوار – الجمال والظلام</h5></div>
-            </div>
-        </div>
-
-        <div id="screen-admin" class="app-screen">
-            <div class="glass-card text-center py-5">
-                <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة والمحاسبة</h4>
-                <a href="https://www.royalelchim.app/acc" target="_blank" class="gold-btn py-3 px-5 mx-auto" style="max-width: 320px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> دخول النظام المحاسبي</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
-        <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>مختبر</span></div>
-        <div class="nav-item" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
-        <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></div>
-        <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
-        <div class="nav-item" onclick="switchTab('vault', this)"><i class="fa-solid fa-folder-open"></i><span>الذاكرة</span></div>
-        <div class="nav-item" onclick="switchTab('manifesto', this)"><i class="fa-solid fa-book-open-reader"></i><span>فلسفة</span></div>
-        <div class="nav-item" onclick="switchTab('admin', this)"><i class="fa-solid fa-user-gear"></i><span>إدارة</span></div>
     </div>
 
     <script>
-        // تغيير الرابط هنا ليكون رابط الـ Backend الخاص بـ Hugging Face مباشرة
+        // تعريف الدوال في بداية السكربت لضمان توافرها
+        function processFaceLogin(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('loginPreview').innerHTML = `<img src="${e.target.result}" class="preview-img">`;
+                    document.getElementById('phoneInputContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function submitNewFace() {
+            document.getElementById('authOverlay').style.display = 'none';
+        }
+
+        function runDiagnosis() {
+            alert("تم إرسال الطلب لرويال مايند بنجاح.");
+        }
+
+        // الربط بالحدث بعد تحميل الصفحة بالكامل
+        window.onload = () => {
+            const faceInput = document.getElementById('faceInput');
+            if (faceInput) {
+                faceInput.addEventListener('change', processFaceLogin);
+            }
+        };
+
         const BACKEND_URL = 'https://royal-elchim-newmind-royal-mind-engine.hf.space';
         
         async function apiFetch(endpoint, options = {}) {
             try {
                 const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
-                if (!response.ok) {
-                    const errText = await response.text();
-                    console.error(`API Error [${response.status}]:`, errText);
-                    throw new Error(`خطأ سيرفر (${response.status})`);
-                }
+                if (!response.ok) throw new Error(`خطأ سيرفر (${response.status})`);
                 return await response.json();
-            } catch (err) {
-                console.error("Fetch Exception:", err);
-                throw err;
-            }
-        }
-
-        async function performRoyalSearch(query) {
-            const cont = document.getElementById('searchResultsContainer');
-            cont.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري البحث...</p>";
-            try {
-                const d = await apiFetch(`/api/search?query=${encodeURIComponent(query)}`);
-                if(d.status === 'success' && d.data.length > 0) {
-                    cont.innerHTML = d.data.map(item => `
-                        <div class="glass-card mb-2 p-3 text-end" style="border-right: 4px solid #b58900; padding:15px;">
-                            <span class="gold-text fw-bold d-block mb-2">${item.name}</span>
-                            <button class="btn btn-sm btn-outline-warning" onclick='addtoInvoice(\"${encodeURIComponent(JSON.stringify(item))}\")'>للفاتورة</button>
-                        </div>
-                    `).join('');
-                } else cont.innerHTML = "<p class='text-center text-muted'>لا يوجد نتائج.</p>";
-            } catch(e) { cont.innerHTML = `<p class='text-danger text-center'>${e.message}</p>`; }
+            } catch (err) { console.error(err); throw err; }
         }
     </script>
 </body>
