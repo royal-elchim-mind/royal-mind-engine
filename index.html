@@ -244,7 +244,8 @@
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
-                <button class="btn btn-sm btn-outline-danger d-block mx-auto mb-3 fw-bold" onclick="clearVault()"><i class="fa-solid fa-trash-can"></i> مسح سجلات الذاكرة وفناء المدركات</button>
+                <p class="text-muted text-center small mb-3">السيرفر يحتفظ بآخر 10 صور فقط للمساحة، لكن النص التاريخي يبقى محفوظاً.</p>
+                <button class="btn btn-sm btn-outline-primary d-block mx-auto mb-3 w-100 fw-bold" onclick="renderVault()"><i class="fa-solid fa-rotate"></i> تحديث السجلات والتاريخ</button>
                 <div id="vaultRes" style="max-height: 450px; overflow-y: auto;"></div>
             </div>
         </div>
@@ -276,15 +277,12 @@
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
-        let searchResultsCached = []; // لحفظ كائنات الأصناف المستعلمة لتجنب مشاكل الاقتباس
-        
+        let searchResultsCached = []; 
         let currentUtterance = null;
         
-        // محرك القراءة والترتيل الملكي المدمج فائق الأمان
+        // المحرك الصوتي المطور للقراءة (TTS)
         function speakText(text, btnElement) {
             if (!text) return;
-            
-            // إذا كان الصوت يعمل بالفعل، نقوم بإيقافه فوراً لتبديل الحالة
             if (window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
                 if (currentUtterance && currentUtterance.btn === btnElement) {
@@ -293,17 +291,13 @@
                 }
             }
 
-            // تنظيف النص من أي وسوم HTML قبل القراءة لضمان نطق فصيح وسليم
             const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "").trim();
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'ar-EG'; // تفعيل النطق بالكنة العربية الفصحى الفخمة
-            utterance.rate = 0.88;    // سرعة وقورة وهادئة تليق بالبراند الملكي
+            utterance.lang = 'ar-EG'; 
+            utterance.rate = 0.88;    
 
-            // محاولة اختيار أفضل وأرق صوت نسائي متوفر باللغة العربية بجهاز العميل (مثل ليلى أو هدى)
             const voices = window.speechSynthesis.getVoices();
             const arabicVoices = voices.filter(v => v.lang.startsWith('ar'));
-            
-            // الكلمات الدلالية للأصوات النسائية العربية الفاخرة والمعتمدة رسمياً في الهواتف
             const femaleKeywords = ['laila', 'hoda', 'naay', 'zeina', 'sana', 'female', 'yasmin', 'amina', 'mariam', 'google'];
             let chosenVoice = null;
 
@@ -311,18 +305,11 @@
                 const nameLower = voice.name.toLowerCase();
                 if (femaleKeywords.some(keyword => nameLower.includes(keyword))) {
                     chosenVoice = voice;
-                    break; // تم تحديد الصوت الأنثوي الأنسب بنجاح!
+                    break;
                 }
             }
-
-            // احتياطي: إذا لم يجد المتصفح اسماً أنثوياً محدداً، يختار أول صوت عربي متاح
-            if (!chosenVoice && arabicVoices.length > 0) {
-                chosenVoice = arabicVoices[0];
-            }
-
-            if (chosenVoice) {
-                utterance.voice = chosenVoice;
-            }
+            if (!chosenVoice && arabicVoices.length > 0) chosenVoice = arabicVoices[0];
+            if (chosenVoice) utterance.voice = chosenVoice;
 
             utterance.onstart = () => {
                 btnElement.innerHTML = '<i class="fa-solid fa-square-stop"></i> إيقاف الاستماع';
@@ -330,20 +317,14 @@
                 btnElement.classList.add('btn-danger', 'text-danger');
             };
 
-            utterance.onend = () => {
-                resetVoiceButton(btnElement);
-            };
-
-            utterance.onerror = () => {
-                resetVoiceButton(btnElement);
-            };
+            utterance.onend = () => resetVoiceButton(btnElement);
+            utterance.onerror = () => resetVoiceButton(btnElement);
 
             utterance.btn = btnElement;
             currentUtterance = utterance;
             window.speechSynthesis.speak(utterance);
         }
 
-        // دالة مريحة لإعادة تهيئة أزرار الصوت لشكلها الفاخر
         function resetVoiceButton(btnElement) {
             btnElement.classList.remove('btn-danger', 'text-danger');
             if (btnElement.classList.contains('vault-speak-btn')) {
@@ -355,7 +336,6 @@
             }
         }
 
-        // دالة مريحة لزر الاستماع لإدراجها تلقائياً بالردود
         function appendListenButton(parentElement, textToRead) {
             if (!parentElement) return;
             const existing = parentElement.querySelector('.royal-listen-btn');
@@ -366,8 +346,6 @@
             btn.style.borderRadius = '8px';
             btn.style.border = '1px solid #b58900';
             btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
-            
-            // تخزين النص بأمان تام داخل الـ Dataset لتفادي أخطاء الرموز والاقتباس
             btn.dataset.speechText = textToRead;
             
             btn.onclick = (e) => {
@@ -377,30 +355,26 @@
             parentElement.appendChild(btn);
         }
 
-        // التحقق الذكي لعنوان الخادم: إذا كان العميل على الدومين الرئيسي لبراند، يتم توجيه الاتصال مباشرة لخادم بايثون على Hugging Face
-        const BACKEND_URL = (window.location.origin.includes("royalelchim.app") || window.location.origin.includes("localhost")) 
-            ? "https://royal-elchim-newmind-royal-mind-engine.hf.space" 
-            : window.location.origin;
+        // ==========================================
+        // 🚀 تم إصلاح هذه النقطة لتوجيه الطلبات للسيرفر الصحيح دائماً
+        // ==========================================
+        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
         let mediaStream = null;
-        let cameraPurpose = 'login'; // 'login' or 'registration'
+        let cameraPurpose = 'login'; 
 
-        // فحص الأمان للتأكد من استخدام رابط مشفر HTTPS لتفعيل الكاميرا على الهواتف
         window.addEventListener('load', () => {
             if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
                 const secureUrl = window.location.href.replace('http://', 'https://');
                 askRoyalConfirmation(
                     "⚠️ تحذير أمان الكاميرا للهواتف",
-                    "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط الآمن المشفر (HTTPS) تلقائياً والاستمتاع بكامل المزايا."
+                    "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط المشفر."
                 ).then((confirmed) => {
-                    if (confirmed) {
-                        window.location.href = secureUrl;
-                    }
+                    if (confirmed) window.location.href = secureUrl;
                 });
             }
         });
 
-        // نظام الإشعارات الملكية المخصص
         function showRoyalNotification(message, type = "success") {
             const toast = document.getElementById('royalToast');
             toast.innerText = message;
@@ -414,7 +388,6 @@
             }, 3500);
         }
 
-        // نافذة التأكيد الملكية المخصصة
         function askRoyalConfirmation(title, message) {
             document.getElementById('confirmTitle').innerText = title;
             document.getElementById('confirmBody').innerText = message;
@@ -436,7 +409,6 @@
             }
         }
 
-        // التحكم بإظهار وإخفاء حقل كود الجملة السري
         function togglePasswordVisibility() {
             const field = document.getElementById('vipSecretCode');
             const icon = document.getElementById('togglePasswordIcon');
@@ -451,12 +423,9 @@
             }
         }
 
-        // إدارة المصادقة وبناء الجلسة
         function authenticateUser() {
             let phone = document.getElementById('royalPhoneInput').value.trim();
-            if(phone.length < 5) {
-                return showRoyalNotification("يرجى إدخال رقم صحيح أولاً.", "error");
-            }
+            if(phone.length < 5) return showRoyalNotification("يرجى إدخال رقم صحيح أولاً.", "error");
             localStorage.setItem('royal_user_phone', phone);
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + phone;
@@ -488,7 +457,6 @@
             if(id === 'vault') renderVault();
         }
 
-        // تحويل الملفات لقاعدة الـ Base64 لرفعها للسيرفر
         function pre(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
@@ -499,7 +467,6 @@
             reader.readAsDataURL(input.files[0]);
         }
 
-        // التعرف الصوتي المدمج
         function startVoiceRecognition(inputId, btnElement) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return showRoyalNotification("حاسة السمع غير مدعومة بالمتصفح الحالي.", "error");
@@ -527,7 +494,6 @@
             searchTimer = setTimeout(() => doSearch(val), 400);
         }
 
-        // فحص وبحث الأصناف والمخزون الحقيقي بالفروع الأربعة
         async function doSearch(q) {
             const container = document.getElementById('searchResultsContainer');
             container.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري جلب الأرصدة الحقيقية وفحص الكتالوج...</p>";
@@ -535,7 +501,7 @@
                 const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    searchResultsCached = d.data; // تخزين النتائج مؤقتاً لتجنب مشاكل الاقتباس
+                    searchResultsCached = d.data; 
                     container.innerHTML = d.data.map((item, index) => `
                         <div class="glass-card mb-2 p-3 text-end">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -553,14 +519,11 @@
             }
         }
 
-        // إدراج الصنف في السلة التفاعلية لحساب الفواتير
         function addtoInvoice(index) {
             const item = searchResultsCached[index];
             if(!item) return;
             
-            // تنظيف الاسم من الأوساط الـ HTML قبل تمريره للفاتورة
             const cleanName = item.name.replace(/<\/?[^>]+(>|$)/g, "");
-
             const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
             if(exists) {
                 exists.qty += 1; 
@@ -612,7 +575,6 @@
             calculateLiveInvoice();
         }
 
-        // استدعاء نظام الفواتير الشريحي الذكي من الخادم
         async function calculateLiveInvoice() {
             if (activeInvoiceItems.length === 0) {
                 document.getElementById('invoiceFinalTotal').innerText = "0";
@@ -648,7 +610,6 @@
             }
         }
 
-        // بوابات الذكاء الاصطناعي والمحاكاة
         async function runSim() {
             if (!imgs.uB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
             const out = document.getElementById('simResponse'); 
@@ -740,7 +701,7 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول الجمالي ونحت الملامح...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/diagnose`, { // دمج البوابات للاستقرار المالي الشامل
+                const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -757,7 +718,6 @@
             }
         }
 
-        // قراءة وعرض سجلات الذاكرة للعميل بشكل آمن خالي من التعارضات البرمجية
         async function renderVault() {
             const phone = localStorage.getItem('royal_user_phone');
             if(!phone) return;
@@ -765,30 +725,47 @@
                 const res = await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    // توليد الـ HTML باستخدام طريقة الربط الآمن للأحداث وتفادي الاقتباسات تماماً
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
+                        let imagesHtml = '';
+                        if (i.selfie || i.product) {
+                            imagesHtml = `
+                                <div class="position-relative d-inline-block mt-3 text-center w-100 bg-light p-2 rounded border">
+                                    ${i.selfie ? `<img src="${i.selfie}" class="d-inline-block rounded shadow-sm" style="max-height:120px; border: 1px solid #b58900; margin-left:5px;">` : ''}
+                                    ${i.product ? `<img src="${i.product}" class="d-inline-block rounded shadow-sm" style="max-height:120px; border: 1px solid #b58900;">` : ''}
+                                    <button class="btn btn-sm btn-danger position-absolute top-0 start-0 rounded-circle shadow" 
+                                            style="width:30px; height:30px; padding:0; transform: translate(-30%, -30%); z-index:5;" 
+                                            onclick="deleteVaultImage('${i.id}')" title="مسح الصور المرفقة والاحتفاظ بالنص فقط">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+
                         return `
                             <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
                                 <div class="d-flex justify-content-between gold-text small mb-2">
                                     <span>${i.type}</span>
-                                    <div class="d-flex gap-3">
-                                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none vault-speak-btn" data-index="${index}">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none vault-speak-btn" data-index="${index}" title="استماع للنص">
                                             <i class="fa-solid fa-volume-high"></i> استماع
                                         </button>
-                                        <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')">
-                                            <i class="fa-solid fa-trash-can"></i> حذف
-                                        </span>
                                     </div>
-                                    <span>${i.date}</span>
+                                    <span dir="ltr">${i.date}</span>
                                 </div>
-                                <div class="small fw-bold text-secondary mb-1">الطلب العميل: ${i.userText || "..."}</div>
-                                <div class="small fw-bold mb-2 text-dark">رويال مايند: ${i.aiText}</div>
-                                ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-height:120px; border: 1px solid #b58900;">` : ''}
+                                <div class="small fw-bold text-secondary mb-1">أنت: ${i.userText || "..."}</div>
+                                <div class="small fw-bold mb-2 text-dark">رويال: ${i.aiText}</div>
+                                
+                                ${imagesHtml}
+
+                                <div class="text-start mt-3">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteVaultRecord('${i.id}')" title="حذف هذه الجلسة بالكامل من التاريخ">
+                                        <i class="fa-solid fa-trash-can"></i> حذف السجل نهائياً
+                                    </button>
+                                </div>
                             </div>
                         `;
                     }).join('');
 
-                    // ربط أحداث الضغط برمجياً وبشكل معزول لمنع انهيار مصفوفة الجافا سكريبت بالهواتف
                     document.querySelectorAll('.vault-speak-btn').forEach(btn => {
                         const index = btn.dataset.index;
                         const item = d.data[index];
@@ -798,30 +775,46 @@
                         };
                     });
                 } else {
-                    document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>لا توجد سجلات وعي أو ذاكرة محفوظة لهذا الهاتف بعد.</p>";
+                    document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>الذاكرة التاريخية فارغة حالياً.</p>";
                 }
             } catch(e) {
-                document.getElementById('vaultRes').innerHTML = "<p class='text-danger text-center'>خطأ في تحميل مصفوفة الذاكرة المركزية.</p>";
+                document.getElementById('vaultRes').innerHTML = "<p class='text-danger text-center'>خطأ في تحميل الذاكرة.</p>";
             }
         }
 
-        async function deleteVaultRecord(recordId) {
-            const confirmed = await askRoyalConfirmation("تأكيد حذف السجل", "هل ترغبين في حذف هذه الاستشارة المحددة بشكل نهائي؟");
+        async function deleteVaultImage(recordId) {
+            const confirmed = await askRoyalConfirmation("تأكيد إزالة الصورة", "هل ترغبين في مسح الصور المرفقة فقط بغرض توفير المساحة، والاحتفاظ بالسجل النصي والفهم الوجداني لهذه الجلسة؟");
             if(!confirmed) return;
             try {
                 const phone = localStorage.getItem('royal_user_phone');
-                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}?phone=${phone}`, {
-                    method: 'DELETE'
-                });
+                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}/image?phone=${phone}`, { method: 'DELETE' });
                 const d = await res.json();
                 if (d.status === 'success') {
-                    showRoyalNotification("تم حذف السجل بنجاح.");
+                    showRoyalNotification("تم مسح الصورة بنجاح مع الاحتفاظ بالسجل.");
                     renderVault();
                 } else {
                     showRoyalNotification(d.message || "فشل الحذف.", "error");
                 }
             } catch (e) {
-                showRoyalNotification("خطأ في الاتصال بالخادم المركزي للحذف.", "error");
+                showRoyalNotification("خطأ في الاتصال بالخادم للحذف.", "error");
+            }
+        }
+
+        async function deleteVaultRecord(recordId) {
+            const confirmed = await askRoyalConfirmation("تأكيد حذف السجل بالكامل", "هل أنت متأكد من حذف هذه الجلسة وتفاصيلها كلياً من الذاكرة المركزية؟");
+            if(!confirmed) return;
+            try {
+                const phone = localStorage.getItem('royal_user_phone');
+                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}?phone=${phone}`, { method: 'DELETE' });
+                const d = await res.json();
+                if (d.status === 'success') {
+                    showRoyalNotification("تم الحذف بنجاح.");
+                    renderVault();
+                } else {
+                    showRoyalNotification(d.message || "فشل الحذف.", "error");
+                }
+            } catch (e) {
+                showRoyalNotification("خطأ في الاتصال.", "error");
             }
         }
 
@@ -829,10 +822,7 @@
             const confirmed = await askRoyalConfirmation("تأكيد فناء الذاكرة", "هل أنت متأكد من محو كامل لذاكرة الوعي وفناء السجلات الملكية الخاصة بهذا الهاتف للأبد؟");
             if(!confirmed) return;
             try {
-                // محاكاة المسح الكامل
-                await fetch(`${BACKEND_URL}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`, { 
-                    method: 'DELETE'
-                });
+                await fetch(`${BACKEND_URL}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`, { method: 'DELETE' });
                 showRoyalNotification("تم فناء ومسح سجلات الذاكرة بالكامل من الخوادم.");
                 renderVault();
             } catch(e) {
@@ -840,24 +830,17 @@
             }
         }
 
-        // =========================================================
-        // 📸 [التحكم بكاميرا الويب ونظام التعرف الفوري Face ID]
-        // =========================================================
         async function openCamera(title, purpose) {
             cameraPurpose = purpose;
             document.getElementById('cameraModalTitle').innerText = title;
             const video = document.getElementById('cameraVideo');
             document.getElementById('cameraModal').style.display = 'flex';
-            
             try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 480 } } 
-                });
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = mediaStream;
-                video.setAttribute('playsinline', true);
                 video.play();
             } catch (err) {
-                showRoyalNotification("فشل الوصول للكاميرا المباشرة. متصفحات الهواتف تشترط رابط HTTPS آمن لتشغيل الكاميرا.", "error");
+                showRoyalNotification("فشل الوصول للكاميرا المباشرة.", "error");
                 closeCamera();
             }
         }
@@ -870,31 +853,22 @@
             document.getElementById('cameraModal').style.display = 'none';
         }
 
-        function openCameraForLogin() {
-            openCamera("جارٍ فحص الملامح للتسجيل التلقائي...", "login");
-        }
-
+        function openCameraForLogin() { openCamera("جارٍ فحص الملامح للتسجيل التلقائي...", "login"); }
         function openCameraForRegistration() {
             const phone = localStorage.getItem('royal_user_phone');
             if(!phone) return showRoyalNotification("سجلي دخول برقم هاتف أولاً لتوثيق الوجه به.", "error");
             openCamera("جارٍ توثيق وبصم الوجه الملكي...", "registration");
         }
 
-        // التقاط الصورة وتحويلها لـ Base64 ومطابقتها بالخلفية
         async function captureSnapshot() {
             const video = document.getElementById('cameraVideo');
             const canvas = document.createElement('canvas');
-            
-            // حل أمان لمشكلة الكاميرات المتأخرة في تحديد حجم البث على الموبايلات لعدم إرسال صور فارغة حجمها صفر
             canvas.width = video.videoWidth > 0 ? video.videoWidth : 480;
             canvas.height = video.videoHeight > 0 ? video.videoHeight : 480;
             const ctx = canvas.getContext('2d');
-            
-            // مرآة الصورة لتسهيل التوجيه الذاتي للعميل
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
             const b64 = canvas.toDataURL('image/jpeg', 0.85);
             closeCamera();
 
@@ -902,12 +876,10 @@
                 showRoyalNotification("جارٍ البحث في مصفوفة الهوية الملكية...");
                 try {
                     const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ selfie: b64 })
                     });
                     const d = await res.json();
-                    
                     if (d.status === 'success') {
                         localStorage.setItem('royal_user_phone', d.phone);
                         document.getElementById('authOverlay').style.display = 'none';
@@ -915,14 +887,12 @@
                         showRoyalNotification(`تم التحقق من الهوية الملكية بنجاح!`);
                         renderVault();
                     } else if (d.status === 'needs_phone') {
-                        // طلب إدخال رقم هاتف لربطه بالوجه الجديد تلقائياً
                         showRoyalNotification(d.message);
                         let fallbackPhone = prompt("وجه جديد! يرجى كتابة رقم الهاتف لربطه بالملامح الملكية تلقائياً:");
                         if (fallbackPhone && fallbackPhone.trim().length >= 5) {
                             showRoyalNotification("جاري تسجيل وبصم الوجه...");
                             const regRes = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ phone: fallbackPhone.trim(), selfie: b64 })
                             });
                             const regD = await regRes.json();
@@ -941,13 +911,11 @@
                     showRoyalNotification("خطأ في الاتصال بنظام المطابقة الرقمية الموحد.", "error");
                 }
             } else {
-                // تسجيل بصمة الوجه للعميل الحالي
                 const phone = localStorage.getItem('royal_user_phone');
                 showRoyalNotification("جارٍ استخلاص التوقيع الهندسي لبصمتكِ...");
                 try {
                     const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ phone: phone, selfie: b64 })
                     });
                     const d = await res.json();
