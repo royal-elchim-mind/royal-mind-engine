@@ -280,7 +280,7 @@
         
         let currentUtterance = null;
         
-        // محرك القراءة والترتيل الملكي المدمج
+        // محرك القراءة والترتيل الملكي المدمج فائق الأمان
         function speakText(text, btnElement) {
             if (!text) return;
             
@@ -288,9 +288,7 @@
             if (window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
                 if (currentUtterance && currentUtterance.btn === btnElement) {
-                    btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
-                    btnElement.classList.remove('btn-danger');
-                    btnElement.classList.add('btn-outline-warning');
+                    resetVoiceButton(btnElement);
                     return;
                 }
             }
@@ -301,32 +299,60 @@
             utterance.lang = 'ar-EG'; // تفعيل النطق بالكنة العربية الفصحى الفخمة
             utterance.rate = 0.88;    // سرعة وقورة وهادئة تليق بالبراند الملكي
 
-            // محاولة اختيار أفضل صوت متوفر باللغة العربية بجهاز العميل
+            // محاولة اختيار أفضل وأرق صوت نسائي متوفر باللغة العربية بجهاز العميل (مثل ليلى أو هدى)
             const voices = window.speechSynthesis.getVoices();
-            const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
-            if (arabicVoice) utterance.voice = arabicVoice;
+            const arabicVoices = voices.filter(v => v.lang.startsWith('ar'));
+            
+            // الكلمات الدلالية للأصوات النسائية العربية الفاخرة والمعتمدة رسمياً في الهواتف
+            const femaleKeywords = ['laila', 'hoda', 'naay', 'zeina', 'sana', 'female', 'yasmin', 'amina', 'mariam', 'google'];
+            let chosenVoice = null;
+
+            for (const voice of arabicVoices) {
+                const nameLower = voice.name.toLowerCase();
+                if (femaleKeywords.some(keyword => nameLower.includes(keyword))) {
+                    chosenVoice = voice;
+                    break; // تم تحديد الصوت الأنثوي الأنسب بنجاح!
+                }
+            }
+
+            // احتياطي: إذا لم يجد المتصفح اسماً أنثوياً محدداً، يختار أول صوت عربي متاح
+            if (!chosenVoice && arabicVoices.length > 0) {
+                chosenVoice = arabicVoices[0];
+            }
+
+            if (chosenVoice) {
+                utterance.voice = chosenVoice;
+            }
 
             utterance.onstart = () => {
                 btnElement.innerHTML = '<i class="fa-solid fa-square-stop"></i> إيقاف الاستماع';
-                btnElement.classList.remove('btn-outline-warning');
-                btnElement.classList.add('btn-danger');
+                btnElement.classList.remove('btn-outline-warning', 'text-primary');
+                btnElement.classList.add('btn-danger', 'text-danger');
             };
 
             utterance.onend = () => {
-                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
-                btnElement.classList.remove('btn-danger');
-                btnElement.classList.add('btn-outline-warning');
+                resetVoiceButton(btnElement);
             };
 
             utterance.onerror = () => {
-                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
-                btnElement.classList.remove('btn-danger');
-                btnElement.classList.add('btn-outline-warning');
+                resetVoiceButton(btnElement);
             };
 
             utterance.btn = btnElement;
             currentUtterance = utterance;
             window.speechSynthesis.speak(utterance);
+        }
+
+        // دالة مريحة لإعادة تهيئة أزرار الصوت لشكلها الفاخر
+        function resetVoiceButton(btnElement) {
+            btnElement.classList.remove('btn-danger', 'text-danger');
+            if (btnElement.classList.contains('vault-speak-btn')) {
+                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع';
+                btnElement.classList.add('text-primary');
+            } else {
+                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+                btnElement.classList.add('btn-outline-warning');
+            }
         }
 
         // دالة مريحة لزر الاستماع لإدراجها تلقائياً بالردود
@@ -340,9 +366,13 @@
             btn.style.borderRadius = '8px';
             btn.style.border = '1px solid #b58900';
             btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
+            
+            // تخزين النص بأمان تام داخل الـ Dataset لتفادي أخطاء الرموز والاقتباس
+            btn.dataset.speechText = textToRead;
+            
             btn.onclick = (e) => {
                 e.stopPropagation();
-                speakText(textToRead, btn);
+                speakText(btn.dataset.speechText, btn);
             };
             parentElement.appendChild(btn);
         }
@@ -727,7 +757,7 @@
             }
         }
 
-        // قراءة وعرض سجلات الذاكرة للعميل
+        // قراءة وعرض سجلات الذاكرة للعميل بشكل آمن خالي من التعارضات البرمجية
         async function renderVault() {
             const phone = localStorage.getItem('royal_user_phone');
             if(!phone) return;
@@ -735,16 +765,19 @@
                 const res = await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    document.getElementById('vaultRes').innerHTML = d.data.map(i => {
-                        // إعداد الرد ليكون آمن وخالي من مشكلات اقتباس الجافا سكريبت عند تمريره لدالة النطق
-                        const safeText = i.aiText.replace(/[\/\\]/g, '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+                    // توليد الـ HTML باستخدام طريقة الربط الآمن للأحداث وتفادي الاقتباسات تماماً
+                    document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         return `
                             <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
                                 <div class="d-flex justify-content-between gold-text small mb-2">
                                     <span>${i.type}</span>
-                                    <div class="d-flex gap-2">
-                                        <span class="text-primary" style="cursor:pointer;" onclick="speakText('${safeText}', this)"><i class="fa-solid fa-volume-high"></i> استماع</span>
-                                        <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')"><i class="fa-solid fa-trash-can"></i> حذف</span>
+                                    <div class="d-flex gap-3">
+                                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none vault-speak-btn" data-index="${index}">
+                                            <i class="fa-solid fa-volume-high"></i> استماع
+                                        </button>
+                                        <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')">
+                                            <i class="fa-solid fa-trash-can"></i> حذف
+                                        </span>
                                     </div>
                                     <span>${i.date}</span>
                                 </div>
@@ -754,6 +787,16 @@
                             </div>
                         `;
                     }).join('');
+
+                    // ربط أحداث الضغط برمجياً وبشكل معزول لمنع انهيار مصفوفة الجافا سكريبت بالهواتف
+                    document.querySelectorAll('.vault-speak-btn').forEach(btn => {
+                        const index = btn.dataset.index;
+                        const item = d.data[index];
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            speakText(item.aiText, btn);
+                        };
+                    });
                 } else {
                     document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>لا توجد سجلات وعي أو ذاكرة محفوظة لهذا الهاتف بعد.</p>";
                 }
