@@ -78,43 +78,61 @@
         </div>
 
         <!-- شاشة محرك الرسوميات للمكياج المتكامل -->
-        <div id="screen-simulation" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> محرك Royal Elchim للواقع المعزز</h4>
-                <p class="small text-center text-muted mb-3">يغطي أحمر الشفاه، العيون، الخدود، النحت، الكونسيلر وتنعيم المسام الفوري.</p>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <select id="simMakeupType" class="form-select fw-bold text-center">
-                            <option value="lips">أحمر شفاه (Lipstick)</option>
-                            <option value="eyeshadow">ظلال عيون (Eyeshadow)</option>
-                            <option value="blush">أحمر خدود (Blush)</option>
-                            <option value="foundation">أساس وبودر (Foundation)</option>
-                            <option value="highlighter">هايلايتر مضيء (Highlighter)</option>
-                            <option value="concealer">إخفاء هالات (Concealer)</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <select id="simTextureType" class="form-select fw-bold text-center text-primary">
-                            <option value="matte">ملمس مطفي (Matte)</option>
-                            <option value="glossy">ملمس لامع (Glossy)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row text-center mb-3">
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-user"></i> وجهكِ سيلفي<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simSelfiePreview', 'selfieBase64')"></label>
-                        <div id="simSelfiePreview"></div>
-                    </div>
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;"><i class="fa-solid fa-box-open"></i> صبغة المنتج<input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simProductPreview', 'productBase64')"></label>
-                        <div id="simProductPreview"></div>
-                    </div>
-                </div>
-                <button class="btn gold-btn py-2" onclick="runSimulation()">تطبيق النحت الفوري والدمج <i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                <div id="simResponse" class="royal-response" style="display:none;"></div>
+      <div id="screen-simulation" class="app-screen">
+    <div class="glass-card">
+        <h4 class="gold-text mb-3 text-center">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> محرك Royal Elchim للواقع المعزز
+        </h4>
+        <p class="small text-center text-muted mb-3">
+            نحت احترافي يعتمد على ذكاء LAB: عدسات، شفاه، عيون، وبشرة مخملية.
+        </p>
+
+        <div class="row mb-3">
+            <div class="col-6">
+                <label class="small gold-text mb-1 d-block text-center">نوع الإجراء التجميلي</label>
+                <select id="simMakeupType" class="form-select fw-bold text-center">
+                    <option value="lenses">💎 عدسات ملكية (Lenses)</option>
+                    <option value="lips">💄 أحمر شفاه (Lipstick)</option>
+                    <option value="eyeshadow">👁️ ظلال عيون (Eyeshadow)</option>
+                    <option value="blush">🌸 أحمر خدود (Blush)</option>
+                    <option value="foundation">🎭 أساس وبودر (Foundation)</option>
+                    <option value="highlighter">✨ هايلايتر مضيء (Highlighter)</option>
+                    <option value="concealer">👁️‍🗨️ إخفاء هالات (Concealer)</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <label class="small gold-text mb-1 d-block text-center">ملمس ونوع الصبغة</label>
+                <select id="simTextureType" class="form-select fw-bold text-center text-primary">
+                    <option value="matte">مطفي مخملي (Matte)</option>
+                    <option value="glossy">لامع سائل (Glossy)</option>
+                </select>
             </div>
         </div>
 
+        <div class="row text-center mb-3">
+            <div class="col-6">
+                <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;">
+                    <i class="fa-solid fa-user"></i> وجهكِ سيلفي
+                    <input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simSelfiePreview', 'selfieBase64')">
+                </label>
+                <div id="simSelfiePreview" class="mt-2"></div>
+            </div>
+            <div class="col-6">
+                <label class="btn btn-outline-warning w-100 p-2" style="border-color:#b58900; color:#b58900; font-weight:bold;">
+                    <i class="fa-solid fa-box-open"></i> صبغة المنتج
+                    <input type="file" hidden accept="image/*" onchange="processAndPreviewImage(event, 'simProductPreview', 'productBase64')">
+                </label>
+                <div id="simProductPreview" class="mt-2"></div>
+            </div>
+        </div>
+
+        <button class="btn gold-btn py-2" onclick="runSimulation()">
+            إطلاق النحت الملكي والدمج <i class="fa-solid fa-camera-retro"></i>
+        </button>
+        
+        <div id="simResponse" class="royal-response" style="display:none;"></div>
+    </div>
+</div>
         <!-- 💇 شاشة قصات وتصميم وتأطير الشعر الجديدة بالكامل -->
         <div id="screen-haircut" class="app-screen">
             <div class="glass-card">
