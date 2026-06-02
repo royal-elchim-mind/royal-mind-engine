@@ -278,8 +278,11 @@
         let confirmPromiseResolver = null;
         let searchResultsCached = []; // لحفظ كائنات الأصناف المستعلمة لتجنب مشاكل الاقتباس
         
-        // جلب مسار الخادم الحالي بشكل ديناميكي لضمان جلب البيانات تلقائياً على أي جهاز وموبايل
-        const BACKEND_URL = window.location.origin;
+        // التحقق الذكي لعنوان الخادم: إذا كان العميل على الدومين الرئيسي لبراند، يتم توجيه الاتصال مباشرة لخادم بايثون على Hugging Face
+        const BACKEND_URL = (window.location.origin.includes("royalelchim.app") || window.location.origin.includes("localhost")) 
+            ? "https://royal-elchim-newmind-royal-mind-engine.hf.space" 
+            : window.location.origin;
+
         let mediaStream = null;
         let cameraPurpose = 'login'; // 'login' or 'registration'
 
@@ -530,14 +533,14 @@
                 const d = await res.json();
                 if(d.status === 'success') {
                     let tierText = "الكارت الأول (السعر الأساسي)";
-                    if (d.tier_applied === 2) tierText = "الكارت الثاني (خصم 10%)";
-                    else if (d.tier_applied === 3) tierText = "الكارت الثالث (خصم 15%)";
-                    else if (d.tier_applied === 4) {
-                        tierText = d.is_wholesale_code_used ? "الكارت الرابع (حساب تاجر الجملة الفوري 👑)" : "الكارت الرابع (خصم 20% لتخطي حاجز 3500)";
+                    if (d.tier === 2) tierText = "الكارت الثاني (خصم 10%)";
+                    else if (d.tier === 3) tierText = "الكارت الثالث (خصم 15%)";
+                    else if (d.tier === 4) {
+                        tierText = d.is_wholesale ? "الكارت الرابع (حساب تاجر الجملة الفوري 👑)" : "الكارت الرابع (خصم 20% لتخطي حاجز 3500)";
                     }
                     document.getElementById('invoiceTierName').innerText = tierText;
-                    document.getElementById('invoiceFinalTotal').innerText = d.final_total.toLocaleString('ar-EG', {minimumFractionDigits: 2});
-                    if (d.is_wholesale_code_used) {
+                    document.getElementById('invoiceFinalTotal').innerText = d.total.toLocaleString('ar-EG', {minimumFractionDigits: 2});
+                    if (d.is_wholesale) {
                         showRoyalNotification("تم التحقق من كود الجملة! تطبيق أسعار الكارت الرابع بنجاح 👑");
                     }
                 }
@@ -757,8 +760,10 @@
         async function captureSnapshot() {
             const video = document.getElementById('cameraVideo');
             const canvas = document.createElement('canvas');
-            canvas.width = 480;
-            canvas.height = 480;
+            
+            // حل أمان لمشكلة الكاميرات المتأخرة في تحديد حجم البث على الموبايلات لعدم إرسال صور فارغة حجمها صفر
+            canvas.width = video.videoWidth > 0 ? video.videoWidth : 480;
+            canvas.height = video.videoHeight > 0 ? video.videoHeight : 480;
             const ctx = canvas.getContext('2d');
             
             // مرآة الصورة لتسهيل التوجيه الذاتي للعميل
@@ -772,18 +777,39 @@
             if (cameraPurpose === 'login') {
                 showRoyalNotification("جارٍ البحث في مصفوفة الهوية الملكية...");
                 try {
-                    const res = await fetch(`${BACKEND_URL}/api/verify_face_login`, {
+                    const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ selfie: b64 })
                     });
                     const d = await res.json();
+                    
                     if (d.status === 'success') {
                         localStorage.setItem('royal_user_phone', d.phone);
                         document.getElementById('authOverlay').style.display = 'none';
                         document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + d.phone;
-                        showRoyalNotification(`أهلاً بعودتك الملكية! تم التعرف التلقائي بنسبة ثقة ${d.confidence.toFixed(1)}%`);
+                        showRoyalNotification(`تم التحقق من الهوية الملكية بنجاح!`);
                         renderVault();
+                    } else if (d.status === 'needs_phone') {
+                        // طلب إدخال رقم هاتف لربطه بالوجه الجديد تلقائياً
+                        showRoyalNotification(d.message);
+                        let fallbackPhone = prompt("وجه جديد! يرجى كتابة رقم الهاتف لربطه بالملامح الملكية تلقائياً:");
+                        if (fallbackPhone && fallbackPhone.trim().length >= 5) {
+                            showRoyalNotification("جاري تسجيل وبصم الوجه...");
+                            const regRes = await fetch(`${BACKEND_URL}/api/auth/face`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ phone: fallbackPhone.trim(), selfie: b64 })
+                            });
+                            const regD = await regRes.json();
+                            if (regD.status === 'success') {
+                                localStorage.setItem('royal_user_phone', regD.phone);
+                                document.getElementById('authOverlay').style.display = 'none';
+                                document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + regD.phone;
+                                showRoyalNotification("تم بصم الوجه وتسجيل الحساب بنجاح!");
+                                renderVault();
+                            }
+                        }
                     } else {
                         showRoyalNotification(d.message || "عذراً، لم نتمكن من العثور على ملامحك بالسجلات.", "error");
                     }
@@ -795,14 +821,14 @@
                 const phone = localStorage.getItem('royal_user_phone');
                 showRoyalNotification("جارٍ استخلاص التوقيع الهندسي لبصمتكِ...");
                 try {
-                    const res = await fetch(`${BACKEND_URL}/api/register_face`, {
+                    const res = await fetch(`${BACKEND_URL}/api/auth/face`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ phone: phone, selfie: b64 })
                     });
                     const d = await res.json();
                     if (d.status === 'success') {
-                        showRoyalNotification(d.message);
+                        showRoyalNotification("تم توثيق وبصم ملامح وجهك الملكي بنجاح في السجلات!");
                     } else {
                         showRoyalNotification(d.message || "فشل تسجيل البصمة، يرجى إعادة المحاولة.", "error");
                     }
