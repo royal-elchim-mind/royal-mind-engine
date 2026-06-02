@@ -48,7 +48,7 @@
     <div class="container pt-3 text-center">
         <h4 class="gold-text fw-bold">ROYAL ELCHIM</h4>
         <p class="small text-muted" id="userDisplay"></p>
-        <button class="btn btn-sm btn-outline-danger mb-2" id="logoutBtn" style="display:none; margin: 0 auto;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> تبديل الحساب البصري</button>
+        <button class="btn btn-sm btn-outline-danger mb-2" id="logoutBtn" style="display:none; margin: 0 auto;" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تبديل الحساب البصري</button>
     </div>
 
     <div class="container mt-2">
@@ -102,27 +102,50 @@
         <div id="screen-search" class="app-screen">
             <div class="glass-card">
                 <h5 class="gold-text text-center"><i class="fa-solid fa-barcode"></i> الاستعلام والمخزون الحقيقي</h5>
+                
+                <!-- شريط بحث مدمج يضم المايك والعدسة معاً -->
                 <div class="input-group mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.15); border-radius: 8px;">
-                    <button class="btn" style="background: rgba(212, 175, 55, 0.15); border: 1px solid #b58900; color: #b58900; border-radius: 0 8px 8px 0;" onclick="startVoiceRecognition('royalSearchInput', this)">
+                    <!-- زر المايك (يمين) -->
+                    <button class="btn" style="background: rgba(212, 175, 55, 0.15); border: 1px solid #b58900; color: #b58900; border-radius: 0 8px 8px 0; transition: 0.3s;" onclick="startVoiceRecognition('royalSearchInput', this)" title="ابحث بصوتك">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <input type="text" id="royalSearchInput" class="form-control text-center py-2" placeholder="ابحث بصوتك أو باسم الصنف..." oninput="debounceSearch(this.value)">
+                    
+                    <!-- حقل الكتابة (منتصف) -->
+                    <input type="text" id="royalSearchInput" class="form-control text-center py-2" style="border: 1px solid #b58900; border-left: none; border-right: none;" placeholder="ابحث بصوتك أو اكتب اسم الصنف..." oninput="debounceSearch(this.value)">
+                    
+                    <!-- زر العدسة اليدوي (يسار) -->
+                    <button class="btn gold-btn m-0" style="width: auto; border-radius: 8px 0 0 8px;" onclick="performRoyalSearch(document.getElementById('royalSearchInput').value)" title="بحث يدوي">
+                        <i class="fa-solid fa-magnifying-glass"></i> بحث
+                    </button>
                 </div>
+
                 <div id="searchResultsContainer"></div>
             </div>
         </div>
 
-        <!-- 4. شاشة فواتير المبيعات -->
+        <!-- 4. شاشة فواتير المبيعات وكبار العملاء (VIP) -->
         <div id="screen-b2b" class="app-screen">
             <div class="glass-card">
-                <h5 class="gold-text text-center"><i class="fa-solid fa-file-invoice-dollar"></i> الفاتورة الذكية</h5>
-                <input type="password" id="vipCode" class="form-control text-center mb-3 border-warning" placeholder="كود كبار العملاء السري..." oninput="calcInv()">
-                <div id="invItems" class="mb-3"><p class="text-center text-muted small py-3 border rounded">الفاتورة فارغة. أضف عناصر من شاشة الاستعلام.</p></div>
-                <div class="p-3 bg-light rounded text-end border shadow-sm">
-                    <h5 class="m-0 text-info fw-bold" id="invTierName">حساب قياسي</h5>
-                    <h4 class="mt-2 text-success fw-bold">الإجمالي: <span id="invTotal">0</span> ج.م</h4>
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> الفاتورة الذكية</h4>
+                <p class="text-muted small text-center mb-3">أضف المنتجات من شاشة الجرد. (الأسعار الخاصة تتفعل تلقائياً في الخلفية)</p>
+                
+                <div class="p-2 border border-warning rounded mb-3" style="background: rgba(212, 175, 55, 0.05);">
+                    <p class="small text-warning fw-bold m-0 mb-1 text-center"><i class="fa-solid fa-lock"></i> كود تفعيل العملاء (سري)</p>
+                    <div class="input-group">
+                        <input type="password" id="vipCode" class="form-control text-center" placeholder="أدخل الكود السري هنا..." oninput="calcInv()">
+                    </div>
                 </div>
-                <button class="gold-btn mt-3" onclick="calcInv()"><i class="fa-solid fa-arrows-rotate"></i> تحديث الفاتورة</button>
+
+                <!-- حاوية الفاتورة التي تخفي السعر الرابع عن العميل -->
+                <div id="invItems" class="mb-3">
+                    <p class="text-center text-muted small py-3 border rounded">الفاتورة خالية. أضف عناصر من سجل الاستعلام.</p>
+                </div>
+                
+                <div class="p-3 bg-light rounded text-end mb-3 border border-secondary shadow-sm">
+                    <h5 class="m-0">نوع الحساب: <span id="invTierName" class="text-info fw-bold">حساب قياسي</span></h5>
+                    <h4 class="mt-2 text-success fw-bold">الإجمالي المستحق: <span id="invTotal">0</span> ج.م</h4>
+                </div>
+                <button class="gold-btn w-100 py-2" onclick="calcInv()"><i class="fa-solid fa-arrows-rotate"></i> تحديث الفاتورة</button>
             </div>
         </div>
 
@@ -130,11 +153,12 @@
         <div id="screen-perfume" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-flask"></i> الخيميائي الكيميائي</h4>
+                <p class="text-muted small text-center mb-3">تحدثي أو اكتبي مزاجكِ أو برجكِ لتقوم رويال مايند بتوجيهك للفرع وصناعة عطرك الخاص بالجرام.</p>
                 <div class="position-relative mb-4">
-                    <textarea id="perfumeInput" class="form-control mb-3" rows="3" placeholder="صفي روحكِ أو طابعكِ العطري..." style="padding-left: 55px;"></textarea>
+                    <textarea id="perfumeInput" class="form-control mb-3" rows="3" placeholder="تحدثي أو صفي طابعكِ العطري هنا..." style="padding-left: 55px;"></textarea>
                     <button class="mic-btn" onclick="startVoiceRecognition('perfumeInput', this)"><i class="fa-solid fa-microphone"></i></button>
                 </div>
-                <button class="gold-btn py-2" onclick="runPerfume()">ابتكار التوقيع العطري</button>
+                <button class="gold-btn w-100 py-2" onclick="runPerfume()">ابتكار التوقيع العطري</button>
                 <div id="perfumeResponse" class="mt-3 p-3 bg-light rounded" style="display:none; border-right: 3px solid #b58900; white-space: pre-line;"></div>
             </div>
         </div>
@@ -143,8 +167,8 @@
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h5 class="gold-text text-center"><i class="fa-solid fa-server"></i> السجلات والذاكرة المركزية</h5>
-                <button class="btn btn-sm btn-outline-primary w-100 mb-3 fw-bold" onclick="renderVault()">تحديث السجلات</button>
-                <div id="vaultCont" style="max-height: 500px; overflow-y: auto;"></div>
+                <button class="btn btn-sm btn-outline-primary w-100 mb-3 fw-bold" onclick="renderVault()"><i class="fa-solid fa-rotate"></i> تحديث السجلات</button>
+                <div id="vaultCont" style="max-height: 500px; overflow-y: auto; text-align: right;"></div>
             </div>
         </div>
         
@@ -152,6 +176,7 @@
         <div id="screen-manifesto" class="app-screen">
             <div class="glass-card text-end">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-open-reader"></i> الفلسفة الملكية</h4>
+                <p class="text-center small text-warning mb-4" style="font-style: italic; font-weight: bold;">"العطر فكرة تُشم، لا تُقال. فلسفة تُقطّر، لا تُنتَج."</p>
                 <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-crown text-warning"></i> بلاك رويال – الأسد</h5><small class="text-muted">قوة الإرادة والسيطرة المطلقة.</small></div>
                 <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-wolf text-warning"></i> رويال شادو – العقرب</h5><small class="text-muted">الغموض والسيطرة على المجهول.</small></div>
                 <div class="p-3 mb-2 bg-light border-end border-warning border-4 rounded"><h5><i class="fa-solid fa-feather text-warning"></i> رويال شاين – القوس</h5><small class="text-muted">الجمال الاستعراضي النادر والثقة المزلزلة.</small></div>
@@ -166,22 +191,23 @@
                 <a href="https://www.royalelchim.app/acc" target="_blank" class="gold-btn py-3 px-5 mx-auto" style="max-width: 320px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> دخول النظام المحاسبي</a>
             </div>
         </div>
+
     </div>
 
-    <!-- شريط التنقل السفلي -->
+    <!-- شريط التنقل السفلي الانسيابي -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="tab('diagnosis', this)"><i class="fa-solid fa-infinity"></i>الصديق</div>
-        <div class="nav-item" onclick="tab('simulation', this)"><i class="fa-solid fa-camera-retro"></i>مختبر</div>
-        <div class="nav-item" onclick="tab('search', this)"><i class="fa-solid fa-barcode"></i>استعلام</div>
-        <div class="nav-item" onclick="tab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i>فواتير</div>
-        <div class="nav-item" onclick="tab('perfume', this)"><i class="fa-solid fa-flask"></i>عطور</div>
-        <div class="nav-item" onclick="tab('vault', this)"><i class="fa-solid fa-folder-open"></i>الذاكرة</div>
-        <div class="nav-item" onclick="tab('manifesto', this)"><i class="fa-solid fa-book-open-reader"></i>فلسفة</div>
-        <div class="nav-item" onclick="tab('admin', this)"><i class="fa-solid fa-user-gear"></i>إدارة</div>
+        <div class="nav-item active" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
+        <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>مختبر</span></div>
+        <div class="nav-item" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
+        <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></div>
+        <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
+        <div class="nav-item" onclick="switchTab('vault', this)"><i class="fa-solid fa-folder-open"></i><span>الذاكرة</span></div>
+        <div class="nav-item" onclick="switchTab('manifesto', this)"><i class="fa-solid fa-book-open-reader"></i><span>فلسفة</span></div>
+        <div class="nav-item" onclick="switchTab('admin', this)"><i class="fa-solid fa-user-gear"></i><span>إدارة</span></div>
     </div>
 
     <script>
-        // تحديد رابط الباك إند ديناميكياً
+        // 🎯 تحديد رابط الباك إند ديناميكياً
         const BACKEND_URL = window.location.origin.includes('localhost') ? 'http://127.0.0.1:7860' : window.location.origin;
         
         let imgs = { uB6: null, pB6: null }, loginData = null, activeInvoiceItems = [];
@@ -229,7 +255,7 @@
                 let aiBox = document.getElementById('aiGreetingBox');
                 aiBox.style.display = 'block';
                 aiBox.innerHTML = `<strong><i class="fa-solid fa-crown text-warning"></i> رويال مايند:</strong><br>${greeting}`;
-                tab('diagnosis', document.querySelector('.nav-item[onclick*="diagnosis"]'));
+                switchTab('diagnosis', document.querySelector('.nav-item[onclick*="diagnosis"]'));
             }
             renderVault();
         }
@@ -241,7 +267,17 @@
             renderVault();
         }
 
-        function logout() { localStorage.removeItem('royal_phone'); window.location.reload(); }
+        function logoutUser() { localStorage.removeItem('royal_phone'); window.location.reload(); }
+
+        // --- التبديل بين الشاشات ---
+        function switchTab(id, el) {
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active'); 
+            if(el) el.classList.add('active');
+            el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            if(id === 'vault') renderVault();
+        }
 
         // --- المايكروفون ---
         function startVoiceRecognition(inputId, btn) {
@@ -397,15 +433,6 @@
                 await fetch(`${BACKEND_URL}/api/vault/${id}?phone=${localStorage.getItem('royal_phone')}`, { method: 'DELETE' });
                 renderVault();
             }
-        }
-
-        // التبديل بين الشاشات
-        function tab(id, el) {
-            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('screen-' + id).classList.add('active'); 
-            if(el) el.classList.add('active');
-            if(id === 'vault') renderVault();
         }
     </script>
 </body>
