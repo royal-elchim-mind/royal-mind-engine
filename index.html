@@ -75,7 +75,7 @@
     <div id="cameraModal">
         <h4 class="text-white mb-3 fw-bold" id="cameraModalTitle">جارٍ فحص الملامح الملكية...</h4>
         <div id="cameraContainer" class="mb-4">
-            <video id="cameraVideo" autoplay playsinline></video>
+            <video id="cameraVideo" autoplay playsinline muted></video>
             <div class="face-scanner-line"></div>
         </div>
         <div class="d-flex gap-2">
@@ -86,7 +86,7 @@
 
     <!-- شاشة تسجيل الدخول المبدئية -->
     <div id="authOverlay">
-        <div class="glass-card text-center" style="width: 350px; border-color: rgba(181,137,0,0.6); box-shadow: 0 15px 50px rgba(0,0,0,0.3);">
+        <div class="glass-card text-center" style="width: 350px; border-color: rgba(181, 137, 0, 0.6); box-shadow: 0 15px 50px rgba(0,0,0,0.3);">
             <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;">
             <h4 class="gold-text">بوابة الهوية الملكية</h4>
             <p class="text-white-50 small">أدخل رقم الهاتف أو استخدم بصمة وجهك</p>
@@ -276,11 +276,27 @@
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
-        let searchResultsCached = []; 
+        let searchResultsCached = []; // لحفظ كائنات الأصناف المستعلمة لتجنب مشاكل الاقتباس
         
-        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
+        // جلب مسار الخادم الحالي بشكل ديناميكي لضمان جلب البيانات تلقائياً على أي جهاز وموبايل
+        const BACKEND_URL = window.location.origin;
         let mediaStream = null;
-        let cameraPurpose = 'login'; 
+        let cameraPurpose = 'login'; // 'login' or 'registration'
+
+        // فحص الأمان للتأكد من استخدام رابط مشفر HTTPS لتفعيل الكاميرا على الهواتف
+        window.addEventListener('load', () => {
+            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                const secureUrl = window.location.href.replace('http://', 'https://');
+                askRoyalConfirmation(
+                    "⚠️ تحذير أمان الكاميرا للهواتف",
+                    "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط الآمن المشفر (HTTPS) تلقائياً والاستمتاع بكامل المزايا."
+                ).then((confirmed) => {
+                    if (confirmed) {
+                        window.location.href = secureUrl;
+                    }
+                });
+            }
+        });
 
         // نظام الإشعارات الملكية المخصص
         function showRoyalNotification(message, type = "success") {
@@ -288,9 +304,11 @@
             toast.innerText = message;
             toast.style.borderColor = type === "success" ? "#b58900" : "#ff4d4d";
             toast.style.boxShadow = type === "success" ? "0 10px 30px rgba(181,137,0,0.35)" : "0 10px 30px rgba(255,77,77,0.35)";
+            toast.style.display = 'block';
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
+                setTimeout(() => { toast.style.display = 'none'; }, 400);
             }, 3500);
         }
 
@@ -407,7 +425,7 @@
             searchTimer = setTimeout(() => doSearch(val), 400);
         }
 
-        // فحص وببحث الأصناف والمخزون الحقيقي بالفروع الأربعة
+        // فحص وبحث الأصناف والمخزون الحقيقي بالفروع الأربعة
         async function doSearch(q) {
             const container = document.getElementById('searchResultsContainer');
             container.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري جلب الأرصدة الحقيقية وفحص الكتالوج...</p>";
@@ -415,17 +433,12 @@
                 const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    searchResultsCached = d.data; 
+                    searchResultsCached = d.data; // تخزين النتائج مؤقتاً لتجنب مشاكل الاقتباس
                     container.innerHTML = d.data.map((item, index) => `
                         <div class="glass-card mb-2 p-3 text-end">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="gold-text fw-bold" style="font-size:1.1rem;">${item.name}</span>
                                 <button class="btn btn-sm btn-outline-warning fw-bold" onclick="addtoInvoice(${index})"><i class="fa-solid fa-plus"></i> لفاتورتكِ</button>
-                            </div>
-                            <div class="mt-2 p-2 rounded" style="background: rgba(0,0,0,0.03);">
-                                <div class="d-flex justify-content-between small"><span>📍 الأقصر - سنتر اللوتس التجاري:</span> <span class="fw-bold">${item.online_qty > 0 ? 'متوفر' : 'نفذ'}</span></div>
-                                <div class="d-flex justify-content-between small"><span>📍 فرع الغردقة - سنترال رويال:</span> <span class="fw-bold">متوفر</span></div>
-                                <div class="d-flex justify-content-between small"><span>📍 فرع مروة - التمكين التجميلي:</span> <span class="fw-bold">متوفر</span></div>
                             </div>
                             <a href="${item.link}" target="_blank" class="btn btn-sm gold-btn mt-2 py-1"><i class="fa-solid fa-cart-shopping"></i> اقتناء فوري من الموقع</a>
                         </div>
@@ -443,17 +456,19 @@
             const item = searchResultsCached[index];
             if(!item) return;
             
+            // تنظيف الاسم من الأوساط الـ HTML قبل تمريره للفاتورة
             const cleanName = item.name.replace(/<\/?[^>]+(>|$)/g, "");
+
             const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
             if(exists) {
-                exists.quantity += 1; 
+                exists.qty += 1; 
             } else { 
                 activeInvoiceItems.push({
                     name: cleanName,
-                    base_price: item.price,
-                    quantity: 1,
+                    price1: item.price,
+                    qty: 1,
                     barcode: item.barcode,
-                    is_fixed_price: item.is_fixed_price
+                    is_fixed: item.is_fixed
                 }); 
             }
             showRoyalNotification("تم إدراج الصنف بنجاح في فاتورتكِ الجارية.");
@@ -471,12 +486,12 @@
                 <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded mb-2 text-end shadow-sm">
                     <button class="btn btn-sm btn-outline-danger py-0 border-0" onclick="removeInvoiceItem(${idx})"><i class="fa-solid fa-trash"></i></button>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="number" class="form-control text-center p-1" style="max-width:70px;" value="${item.quantity}" min="1" onchange="changeItemQuantity(${idx}, this.value)">
+                        <input type="number" class="form-control text-center p-1" style="max-width:70px;" value="${item.qty}" min="1" onchange="changeItemQuantity(${idx}, this.value)">
                         <span class="small fw-bold">الكمية:</span>
                     </div>
                     <div>
                         <span class="fw-bold small d-block">${item.name}</span>
-                        <span class="text-muted" style="font-size:0.75rem;">السعر الأساسي: ${item.base_price} ج.م ${item.is_fixed_price ? '<span class="badge bg-secondary">صافي</span>' : ''}</span>
+                        <span class="text-muted" style="font-size:0.75rem;">السعر الأساسي: ${item.price1} ج.م ${item.is_fixed ? '<span class="badge bg-secondary">صافي</span>' : ''}</span>
                     </div>
                 </div>
             `).join('');
@@ -485,7 +500,7 @@
         function changeItemQuantity(index, val) {
             const parsed = parseInt(val);
             if (isNaN(parsed) || parsed < 1) return;
-            activeInvoiceItems[index].quantity = parsed;
+            activeInvoiceItems[index].qty = parsed;
             calculateLiveInvoice();
         }
 
@@ -504,7 +519,7 @@
             }
             try {
                 const secret = document.getElementById('vipSecretCode').value.trim();
-                const res = await fetch(`${BACKEND_URL}/api/calculate_invoice`, {
+                const res = await fetch(`${BACKEND_URL}/api/invoice/calculate`, {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -619,7 +634,7 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول الجمالي ونحت الملامح...</p>";
             try {
-                const res = await fetch(`${BACKEND_URL}/api/diagnose`, { 
+                const res = await fetch(`${BACKEND_URL}/api/diagnose`, { // دمج البوابات للاستقرار المالي الشامل
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
@@ -645,7 +660,11 @@
                 if(d.status === 'success' && d.data.length > 0) {
                     document.getElementById('vaultRes').innerHTML = d.data.map(i => `
                         <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
-                            <div class="d-flex justify-content-between gold-text small mb-2"><span>${i.type}</span><span>${i.date}</span></div>
+                            <div class="d-flex justify-content-between gold-text small mb-2">
+                                <span>${i.type}</span>
+                                <span class="text-danger" style="cursor:pointer;" onclick="deleteVaultRecord('${i.id}')"><i class="fa-solid fa-trash-can"></i> حذف السجل</span>
+                                <span>${i.date}</span>
+                            </div>
                             <div class="small fw-bold text-secondary mb-1">الطلب العميل: ${i.userText || "..."}</div>
                             <div class="small fw-bold mb-2 text-dark">رويال مايند: ${i.aiText}</div>
                             ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-height:120px; border: 1px solid #b58900;">` : ''}
@@ -659,17 +678,38 @@
             }
         }
 
+        async function deleteVaultRecord(recordId) {
+            const confirmed = await askRoyalConfirmation("تأكيد حذف السجل", "هل ترغبين في حذف هذه الاستشارة المحددة بشكل نهائي؟");
+            if(!confirmed) return;
+            try {
+                const phone = localStorage.getItem('royal_user_phone');
+                const res = await fetch(`${BACKEND_URL}/api/vault/${recordId}?phone=${phone}`, {
+                    method: 'DELETE'
+                });
+                const d = await res.json();
+                if (d.status === 'success') {
+                    showRoyalNotification("تم حذف السجل بنجاح.");
+                    renderVault();
+                } else {
+                    showRoyalNotification(d.message || "فشل الحذف.", "error");
+                }
+            } catch (e) {
+                showRoyalNotification("خطأ في الاتصال بالخادم المركزي للحذف.", "error");
+            }
+        }
+
         async function clearVault() {
             const confirmed = await askRoyalConfirmation("تأكيد فناء الذاكرة", "هل أنت متأكد من محو كامل لذاكرة الوعي وفناء السجلات الملكية الخاصة بهذا الهاتف للأبد؟");
             if(!confirmed) return;
             try {
+                // محاكاة المسح الكامل
                 await fetch(`${BACKEND_URL}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`, { 
                     method: 'DELETE'
                 });
                 showRoyalNotification("تم فناء ومسح سجلات الذاكرة بالكامل من الخوادم.");
                 renderVault();
             } catch(e) {
-                showRoyalNotification("خطأ في معالجةطلب المسح.", "error");
+                showRoyalNotification("خطأ في معالجة طلب المسح.", "error");
             }
         }
 
@@ -684,11 +724,13 @@
             
             try {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: 480, height: 480 } 
+                    video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 480 } } 
                 });
                 video.srcObject = mediaStream;
+                video.setAttribute('playsinline', true);
+                video.play();
             } catch (err) {
-                showRoyalNotification("فشل الوصول للكاميرا المباشرة. يرجى تفعيل الأذونات.", "error");
+                showRoyalNotification("فشل الوصول للكاميرا المباشرة. متصفحات الهواتف تشترط رابط HTTPS آمن لتشغيل الكاميرا.", "error");
                 closeCamera();
             }
         }
@@ -719,6 +761,7 @@
             canvas.height = 480;
             const ctx = canvas.getContext('2d');
             
+            // مرآة الصورة لتسهيل التوجيه الذاتي للعميل
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -748,6 +791,7 @@
                     showRoyalNotification("خطأ في الاتصال بنظام المطابقة الرقمية الموحد.", "error");
                 }
             } else {
+                // تسجيل بصمة الوجه للعميل الحالي
                 const phone = localStorage.getItem('royal_user_phone');
                 showRoyalNotification("جارٍ استخلاص التوقيع الهندسي لبصمتكِ...");
                 try {
