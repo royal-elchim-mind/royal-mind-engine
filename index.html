@@ -277,6 +277,7 @@
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
+        let searchResultsCached = []; 
         let currentUtterance = null;
         
         // المحرك الصوتي المطور للقراءة (TTS)
@@ -737,6 +738,11 @@
                 if(d.status === 'success' && d.data.length > 0) {
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
+                        
+                        // ✅ إصلاح روابط الصور (Mixed Content) لاستخدام https دائماً
+                        if (i.selfie) i.selfie = i.selfie.replace('http://', 'https://');
+                        if (i.product) i.product = i.product.replace('http://', 'https://');
+
                         if (i.selfie || i.product) {
                             imagesHtml = `
                                 <div class="position-relative d-inline-block mt-3 text-center w-100 bg-light p-2 rounded border">
