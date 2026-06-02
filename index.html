@@ -37,13 +37,33 @@
         .royal-logo-container.listening-pulse { box-shadow: 0 0 30px rgba(255, 77, 77, 0.8), 0 0 15px #b58900; transform: scale(1.05); }
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .manifesto-badge { border-right: 4px solid #b58900; padding-right: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.03); padding: 14px; border-radius: 6px; }
+
+        /* Custom Elegant Dialogs and Toast System to prevent browser blocking */
+        .royal-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(26, 26, 46, 0.95); color: #fff; border: 1px solid #b58900; padding: 12px 24px; border-radius: 30px; z-index: 99999; transition: 0.4s ease; box-shadow: 0 5px 20px rgba(181,137,0,0.3); opacity: 0; pointer-events: none; }
+        .royal-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .royal-confirm-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100000; display: none; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
+    <!-- Custom elegant Toast notification -->
+    <div id="royalToast" class="royal-toast text-center font-weight-bold"></div>
+
+    <!-- Custom elegant Confirmation Modal -->
+    <div id="royalConfirm" class="royal-confirm-modal">
+        <div class="glass-card text-center m-3 p-4" style="max-width: 400px; width: 100%;">
+            <h5 class="gold-text mb-3" id="confirmTitle">تأكيد الإجراء</h5>
+            <p id="confirmMessage" class="small mb-4 text-muted"></p>
+            <div class="d-flex gap-2">
+                <button class="gold-btn py-2" id="confirmYesBtn">تأكيد</button>
+                <button class="btn btn-outline-secondary w-100 py-2 font-weight-bold" onclick="closeConfirmModal()">تراجع</button>
+            </div>
+        </div>
+    </div>
+
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px;">
-            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;">
+            <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;" onerror="this.src='https://placehold.co/100x100?text=ROYAL'">
             <h4 class="gold-text">بوابة الهوية الملكية</h4>
             <input type="tel" id="royalPhoneInput" class="form-control text-center my-4 fw-bold" placeholder="أدخل رقم هاتف العميل">
             <button class="gold-btn" onclick="authenticateUser()">دخول القصر الملكي</button>
@@ -52,7 +72,7 @@
 
     <div class="container pt-4 text-center">
         <div id="mainRoyalLogo" class="royal-logo-container">
-            <img src="logo.jpg" alt="Royal Elchim Logo">
+            <img src="logo.jpg" alt="Royal Elchim Logo" onerror="this.src='https://placehold.co/100x100?text=ROYAL'">
         </div>
         <h3 class="gold-text fw-bold mb-0 mt-2">ROYAL ELCHIM</h3>
         <p class="small text-muted mt-1 fw-bold" id="userDisplay">نظام الإدارة والوعي الجمالي الشامل</p>
@@ -72,19 +92,40 @@
             </div>
         </div>
 
-        <!-- 2. شاشة فواتير المبيعات وكبار العملاء -->
+        <!-- 2. شاشة فواتير المبيعات وكبار العملاء المحدثة بالكامل -->
         <div id="screen-b2b" class="app-screen">
             <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> فواتير المبيعات</h4>
-                <div class="p-2 border border-warning rounded mb-3" style="background: rgba(212, 175, 55, 0.05);">
-                    <input type="password" id="vipSecretCode" class="form-control text-center" placeholder="كود تفعيل حساب كبار العملاء (VIP السري)">
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> حساب الفاتورة الديناميكي</h4>
+                
+                <div class="p-3 border border-warning rounded mb-3" style="background: rgba(212, 175, 55, 0.05);">
+                    <label class="form-label small fw-bold gold-text">مربع كود الجملة السري (VIP):</label>
+                    <input type="text" id="vipSecretCode" class="form-control text-center font-monospace" placeholder="أدخل كود الجملة السري لتفعيل سعر الكارت 4">
+                    
+                    <!-- مولد كود تلقائي وشرح تفاعلي لكيفية الاستخدام -->
+                    <div class="mt-2 text-center">
+                        <small class="text-muted d-block mb-1">💡 لتخطي حساب الفاتورة والحصول على الكارت الرابع مباشرة:</small>
+                        <span id="generatedTodayCodeBadge" class="badge bg-warning text-dark p-2" style="cursor: pointer; border: 1px dashed #b58900;" onclick="applyTodaySecretCode()">
+                            انقر هنا لنسخ وتطبيق كود اليوم الفوري
+                        </span>
+                    </div>
                 </div>
-                <div id="invoiceItemsContainer" class="mb-3"></div>
+
+                <div id="invoiceItemsContainer" class="mb-3">
+                    <p class="text-muted text-center small py-3">لم يتم إدراج أي منتجات بالفاتورة حتى الآن. اذهب لشاشة البحث وأضف بعض الأصناف.</p>
+                </div>
+                
                 <div class="p-3 bg-light rounded text-end mb-3 border border-secondary shadow-sm">
-                    <h5>نوع الحساب: <span id="invoiceTierName" class="text-info fw-bold">حساب قياسي</span></h5>
-                    <h4 class="mt-2 text-success fw-bold">المستحق: <span id="invoiceFinalTotal">0</span> ج.م</h4>
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>إجمالي الفاتورة الأساسي:</span>
+                        <span id="invoiceBaseTotal">0</span> ج.م
+                    </div>
+                    <h5>شريحة السعر المطبقة: <span id="invoiceTierName" class="text-info fw-bold">الكارت 1 (سعر أساسي)</span></h5>
+                    <h4 class="mt-2 text-success fw-bold">المستحق النهائي: <span id="invoiceFinalTotal">0</span> ج.م</h4>
+                    <small class="text-muted d-block text-center mt-2 font-italic" style="font-size: 0.75rem;">
+                        * يتم احتساب الخصم تلقائياً عند تجاوز: 1500 (كارت 2) | 2500 (كارت 3) | 3500 (كارت 4)
+                    </small>
                 </div>
-                <button class="gold-btn w-100 py-2" onclick="calculateLiveInvoice()"><i class="fa-solid fa-arrows-rotate"></i> تحديث وحساب الفاتورة</button>
+                <button class="gold-btn w-100 py-2" onclick="calculateLiveInvoice()"><i class="fa-solid fa-arrows-rotate"></i> تحديث وحساب الفاتورة الآن</button>
             </div>
         </div>
 
@@ -177,7 +218,7 @@
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
-                <button class="btn btn-sm btn-outline-danger d-block mx-auto mb-3 fw-bold" onclick="clearVault()"><i class="fa-solid fa-trash-can"></i> مسح سجلات الذاكرة وفناء المدركات</button>
+                <button class="btn btn-sm btn-outline-danger d-block mx-auto mb-3 fw-bold" onclick="promptClearVault()"><i class="fa-solid fa-trash-can"></i> مسح سجلات الذاكرة وفناء المدركات</button>
                 <div id="vaultRes" style="max-height: 450px; overflow-y: auto;"></div>
             </div>
         </div>
@@ -207,11 +248,72 @@
     <script>
         let imgs = { uB64: null, pB64: null };
         let activeInvoiceItems = [];
+        let searchTimer = null;
         const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
+        // =========================================================
+        // [نظام الإشعارات المخصص البديل عن Alert]
+        // =========================================================
+        function showRoyalToast(message, duration = 3000) {
+            const toast = document.getElementById('royalToast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        function showRoyalConfirm(message, callback) {
+            const modal = document.getElementById('royalConfirm');
+            document.getElementById('confirmMessage').innerText = message;
+            modal.style.display = 'flex';
+            
+            const yesBtn = document.getElementById('confirmYesBtn');
+            // Remove old listeners
+            const newYesBtn = yesBtn.cloneNode(true);
+            yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+            
+            newYesBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                callback();
+            });
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('royalConfirm').style.display = 'none';
+        }
+
+        // =========================================================
+        // [برمجة توليد وتطبيق الكود السري]
+        // =========================================================
+        function getTodayWholesaleCode() {
+            // توليد تاريخ اليوم بتوقيت القاهرة المحلي بتنسيق YYYY-MM-DD
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `simsim#${year}-${month}-${day}`;
+        }
+
+        // تحديث النص الظاهر على زر الكود السري
+        document.addEventListener('DOMContentLoaded', () => {
+            const todayCode = getTodayWholesaleCode();
+            document.getElementById('generatedTodayCodeBadge').innerText = `اضغط لنسخ وتطبيق كود اليوم: ${todayCode}`;
+        });
+
+        function applyTodaySecretCode() {
+            const todayCode = getTodayWholesaleCode();
+            document.getElementById('vipSecretCode').value = todayCode;
+            showRoyalToast("🔓 تم نسخ وتطبيق كود تاجر الجملة بنجاح!");
+            calculateLiveInvoice();
+        }
+
+        // =========================================================
+        // [إدارة المستخدم وتطابق الهوية]
+        // =========================================================
         function authenticateUser() {
             let p = document.getElementById('royalPhoneInput').value.trim();
-            if(p.length < 5) return alert("يرجى إدخال رقم صحيح.");
+            if(p.length < 5) return showRoyalToast("يرجى إدخال رقم هاتف صحيح.");
             localStorage.setItem('royal_user_phone', p);
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + p;
@@ -243,7 +345,7 @@
 
         function startVoiceRecognition(inputId, btnElement) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return alert("حاسة السمع غير مدعومة بالمتصفح.");
+            if (!SpeechRecognition) return showRoyalToast("حاسة السمع غير مدعومة بهذا المتصفح.");
             const recognition = new SpeechRecognition();
             recognition.lang = 'ar-EG';
             const logo = document.getElementById('mainRoyalLogo');
@@ -264,113 +366,256 @@
 
         async function doSearch(q) {
             const container = document.getElementById('searchResultsContainer');
-            container.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري جلب الأرصدة الحقيقية...</p>";
-            const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
-            const d = await res.json();
-            if(d.status === 'success' && d.data.length > 0) {
-                container.innerHTML = d.data.map(item => `
-                    <div class="glass-card mb-2 p-3 text-end">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="gold-text fw-bold" style="font-size:1.1rem;">${item.name}</span>
-                            <button class="btn btn-sm btn-outline-warning fw-bold" onclick='addtoInvoice(\"${encodeURIComponent(JSON.stringify(item))}\")'><i class="fa-solid fa-plus"></i> لفاتورتكِ</button>
+            container.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري جلب الأرصدة الحقيقية بالفروع...</p>";
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
+                const d = await res.json();
+                if(d.status === 'success' && d.data.length > 0) {
+                    container.innerHTML = d.data.map(item => `
+                        <div class="glass-card mb-2 p-3 text-end">
+                            <div class="d-flex justify-content-between align-items-center mb-2 text-wrap" style="gap:10px;">
+                                <span class="gold-text fw-bold" style="font-size:1.05rem; text-align:right;">${item.name}</span>
+                                <button class="btn btn-sm btn-outline-warning fw-bold flex-shrink-0" onclick='addtoInvoice(\"${encodeURIComponent(JSON.stringify(item))}\")'><i class="fa-solid fa-plus"></i> للفاتورة</button>
+                            </div>
+                            <div class="mt-2 p-2 rounded" style="background: rgba(0,0,0,0.03);">
+                                <div class="d-flex justify-content-between small"><span>السعر الأساسي:</span> <span class="fw-bold text-success">${item.price} ج.م</span></div>
+                                <div class="d-flex justify-content-between small text-muted"><span>حالة الخصم:</span> <span>${item.is_fixed_price ? 'صافي (لا يطبق خصم)' : 'يقبل خصم الشرائح'}</span></div>
+                            </div>
+                            ${item.link ? `<a href="${item.link}" target="_blank" class="btn btn-sm gold-btn mt-2 py-1"><i class="fa-solid fa-cart-shopping"></i> اقتناء فوري من الموقع</a>` : ''}
                         </div>
-                        <div class="mt-2 p-2 rounded" style="background: rgba(0,0,0,0.03);">
-                            <div class="d-flex justify-content-between small"><span>📍 الأقصر - سنتر اللوتس التجاري:</span> <span class="fw-bold">${item.luxor_lotus_qty > 0 ? 'متوفر ('+item.luxor_lotus_qty+')' : 'نفذ'}</span></div>
-                            <div class="d-flex justify-content-between small"><span>📍 royal elchim marwa:</span> <span class="fw-bold">${item.marrowa_qty > 0 ? 'متوفر ('+item.marrowa_qty+')' : 'نفذ'}</span></div>
-                            <div class="d-flex justify-content-between small"><span>📍 hurgada:</span> <span class="fw-bold">${item.hurgada_qty > 0 ? 'متوفر ('+item.hurgada_qty+')' : 'نفذ'}</span></div>
-                            <div class="d-flex justify-content-between small"><span>🌐 الأونلاين والموقع الإلكتروني:</span> <span class="fw-bold">${item.online_qty > 0 ? 'متوفر ('+item.online_qty+')' : 'نفذ'}</span></div>
-                        </div>
-                        ${item.show_link ? `<a href="${item.link}" target="_blank" class="btn btn-sm gold-btn mt-2 py-1"><i class="fa-solid fa-cart-shopping"></i> اقتناء فوري من الموقع</a>` : ''}
-                    </div>
-                `).join('');
-            } else { container.innerHTML = "<p class='text-muted text-center'>لا توجد أصناف مطابقة.</p>"; }
+                    `).join('');
+                } else { 
+                    container.innerHTML = "<p class='text-muted text-center'>لا توجد أصناف مطابقة.</p>"; 
+                }
+            } catch (err) {
+                container.innerHTML = "<p class='text-danger text-center'>فشل الاتصال بمحرك البحث الملكي.</p>";
+            }
         }
 
         function addtoInvoice(encoded) {
             const item = JSON.parse(decodeURIComponent(encoded));
             const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
-            if(exists) exists.qty += 1; else { item.qty = 1; activeInvoiceItems.push(item); }
-            alert("تم الإدراج بالفاتورة."); renderInvoiceDOM(); calculateLiveInvoice();
+            if(exists) {
+                exists.qty += 1;
+            } else { 
+                item.qty = 1; 
+                activeInvoiceItems.push(item); 
+            }
+            showRoyalToast("✅ تم إدراج المنتج في سلة حساب الفاتورة."); 
+            renderInvoiceDOM(); 
+            calculateLiveInvoice();
+        }
+
+        function updateItemQuantity(index, val) {
+            const quantity = parseInt(val);
+            if(isNaN(quantity) || quantity <= 0) {
+                activeInvoiceItems.splice(index, 1);
+            } else {
+                activeInvoiceItems[index].qty = quantity;
+            }
+            renderInvoiceDOM();
+            calculateLiveInvoice();
         }
 
         function renderInvoiceDOM() {
-            document.getElementById('invoiceItemsContainer').innerHTML = activeInvoiceItems.map((item, idx) => `
-                <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded mb-2 text-end shadow-sm">
-                    <input type="number" class="form-control text-center p-1" style="max-width:70px;" value="${item.qty}" min="0" onchange="activeInvoiceItems(${idx}).qty=parseInt(this.value); calculateLiveInvoice();">
-                    <div><span class="fw-bold small">${item.raw_name}</span></div>
-                </div>
-            `).join('');
+            const container = document.getElementById('invoiceItemsContainer');
+            if(activeInvoiceItems.length === 0) {
+                container.innerHTML = `<p class="text-muted text-center small py-3">لم يتم إدراج أي منتجات بالفاتورة حتى الآن. اذهب لشاشة البحث وأضف بعض الأصناف.</p>`;
+                return;
+            }
+            container.innerHTML = activeInvoiceItems.map((item, idx) => {
+                // تنظيف الاسم من وسم HTML للعرض النظيف
+                const cleanName = item.name.replace(/<[^>]*>/g, '').split('🌐')[0].trim();
+                return `
+                    <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded mb-2 text-end shadow-sm">
+                        <input type="number" class="form-control text-center p-1" style="max-width:70px;" value="${item.qty}" min="0" onchange="updateItemQuantity(${idx}, this.value)">
+                        <div class="ps-2 text-wrap" style="flex-grow:1;"><span class="fw-bold small">${cleanName}</span></div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function calculateLiveInvoice() {
-            const res = await fetch(`${BACKEND_URL}/api/invoice/calculate`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ items: activeInvoiceItems, secret_code: document.getElementById('vipSecretCode').value })
+            if(activeInvoiceItems.length === 0) {
+                document.getElementById('invoiceBaseTotal').innerText = "0";
+                document.getElementById('invoiceTierName').innerText = "الكارت 1 (سعر أساسي)";
+                document.getElementById('invoiceFinalTotal').innerText = "0";
+                return;
+            }
+
+            // رسم الفاتورة على الخادم لمطابقة البيانات بشكل آمن ومحمي
+            const mappedItems = activeInvoiceItems.map(item => {
+                const cleanName = item.name.replace(/<[^>]*>/g, '').split('🌐')[0].trim();
+                return {
+                    name: cleanName,
+                    base_price: parseFloat(item.price) || 0,
+                    quantity: parseInt(item.qty) || 1,
+                    is_fixed_price: item.is_fixed_price || false
+                };
             });
-            const d = await res.json();
-            document.getElementById('invoiceTierName').innerText = d.tier_name;
-            document.getElementById('invoiceFinalTotal').innerText = d.final_total.toFixed(2);
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/calculate_invoice`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        items: mappedItems, 
+                        secret_code: document.getElementById('vipSecretCode').value.trim() 
+                    })
+                });
+                const d = await res.json();
+                if(d.status === 'success') {
+                    document.getElementById('invoiceBaseTotal').innerText = d.base_total.toLocaleString('ar-EG');
+                    
+                    let tierText = `الكارت ${d.tier_applied}`;
+                    if(d.is_wholesale_code_used) {
+                        tierText += " 👑 (حساب تاجر الجملة الفوري)";
+                    } else if (d.tier_applied > 1) {
+                        tierText += ` (خصم تلقائي لتخطي الشريحة)`;
+                    } else {
+                        tierText += " (سعر المستهلك)";
+                    }
+
+                    document.getElementById('invoiceTierName').innerText = tierText;
+                    document.getElementById('invoiceFinalTotal').innerText = d.final_total.toLocaleString('ar-EG');
+                } else {
+                    showRoyalToast("⚠️ خطأ في حساب الفاتورة.");
+                }
+            } catch (err) {
+                showRoyalToast("❌ تعذر الاتصال بخادم الحساب التلقائي.");
+            }
         }
 
         async function runSim() {
-            const out = document.getElementById('simRes'); out.style.display = 'block'; out.innerHTML = "جاري تفعيل النحت البصري الحقيقي...";
+            const out = document.getElementById('simResponse'); 
+            out.style.display = 'block'; 
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري تفعيل النحت البصري الحقيقي وجلب المعززات...</p>";
             const mode = document.getElementById('masterMode').value;
-            const res = await fetch(`${BACKEND_URL}/api/simulate_master`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    user_selfie: imgs.uB64, product_image: imgs.pB64,
-                    mode: mode, texture: "matte", phone: localStorage.getItem('royal_user_phone'),
-                    product_name_desc: document.getElementById('simProductName').value
-                })
-            });
-            const d = await res.json();
-            if(d.status === 'success') { out.innerHTML = `<img src="${d.result_image}" class="img-fluid rounded mb-3 shadow">` + d.simulation_result; renderVault(); }
+            
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/simulate_master`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_selfie: imgs.uB64, 
+                        product_image: imgs.pB64,
+                        makeup_type: mode, 
+                        phone: localStorage.getItem('royal_user_phone')
+                    })
+                });
+                const d = await res.json();
+                if(d.status === 'success') { 
+                    out.innerHTML = `<img src="${d.result_image}" class="img-fluid rounded mb-3 shadow d-block mx-auto">` + d.simulation_result; 
+                    renderVault(); 
+                } else {
+                    out.innerHTML = "❌ فشلت عملية المعالجة البصرية.";
+                }
+            } catch(e) {
+                out.innerHTML = "❌ خطأ أثناء الاتصال بمحرك المعالجة الرسومية.";
+            }
         }
 
         async function runPerfume() {
-            const out = document.getElementById('perfumeResponse'); out.style.display = 'block'; out.innerHTML = "الخيميائي يمزج التناغم الفلكي والجرامات...";
-            const res = await fetch(`${BACKEND_URL}/api/craft_perfume`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ client_message: document.getElementById('perfInp').value, phone: localStorage.getItem('royal_user_phone') })
-            });
-            const d = await res.json(); out.innerHTML = d.answer; renderVault();
+            const out = document.getElementById('perfumeResponse'); 
+            out.style.display = 'block'; 
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> الخيميائي يمزج التناغم الفلكي والجرامات...</p>";
+            
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/craft_perfume`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        client_message: document.getElementById('perfumeInput').value, 
+                        phone: localStorage.getItem('royal_user_phone') 
+                    })
+                });
+                const d = await res.json(); 
+                out.innerHTML = d.answer; 
+                renderVault();
+            } catch(e) {
+                out.innerHTML = "❌ فشلت عملية ابتكار التوقيع العطري.";
+            }
         }
 
         async function runDiagnosis() {
-            const out = document.getElementById('diagResponse'); out.style.display = 'block'; out.innerHTML = "رويال مايند تستوعب الفهم العميق للوعي...";
-            const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ client_message: document.getElementById('diagnosisInput').value, phone: localStorage.getItem('royal_user_phone') })
-            });
-            const d = await res.json(); out.innerHTML = d.diagnosis; renderVault();
+            const out = document.getElementById('diagResponse'); 
+            out.style.display = 'block'; 
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> رويال مايند تستوعب الفهم العميق للوعي...</p>";
+            
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        client_message: document.getElementById('diagnosisInput').value, 
+                        phone: localStorage.getItem('royal_user_phone') 
+                    })
+                });
+                const d = await res.json(); 
+                out.innerHTML = d.diagnosis; 
+                renderVault();
+            } catch(e) {
+                out.innerHTML = "❌ فشل الاتصال بالمستشار الوجداني.";
+            }
         }
 
         async function runChat(cat, inpId, outId) {
-            const out = document.getElementById(outId); out.style.display = 'block'; out.innerHTML = "جاري استخلاص النوتات...";
-            const res = await fetch(`${BACKEND_URL}/api/chat`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text: document.getElementById(inpId).value, category: cat, phone: localStorage.getItem('royal_user_phone') })
-            });
-            const d = await res.json(); out.innerHTML = d.answer; renderVault();
+            const out = document.getElementById(outId); 
+            out.style.display = 'block'; 
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري استخلاص نوتات الاستشارة...</p>";
+            
+            // توجيه المحادثة الفنية للمستشار الجمالي عبر محرك الوعي المركزي
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        client_message: `بصفتكِ الميكب آرتيست العلاجية وخبير التجميل والستايلست لـ Royal Elchim، أرجو الإجابة بالتفصيل عما يلي: ${document.getElementById(inpId).value}`, 
+                        phone: localStorage.getItem('royal_user_phone') 
+                    })
+                });
+                const d = await res.json(); 
+                out.innerHTML = d.diagnosis; 
+                renderVault();
+            } catch(e) {
+                out.innerHTML = "❌ تعذر توجيه الاستشارة التجميلية.";
+            }
         }
 
         async function renderVault() {
-            const res = await fetch(`${BACKEND_URL}/api/vault?phone=${localStorage.getItem('royal_user_phone')}`);
-            const d = await res.json();
-            document.getElementById('vaultRes').innerHTML = d.data.map(i => `
-                <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4">
-                    <div class="d-flex justify-content-between gold-text small mb-2"><span>${i.type}</span><span>${i.date}</span></div>
-                    <div class="small fw-bold text-secondary mb-1">أنتِ: ${i.userText || "..."}</div>
-                    <div class="small fw-bold mb-2">رويال مايند: ${i.aiText}</div>
-                    ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-width:120px;">` : ''}
-                </div>
-            `).join('');
+            const phone = localStorage.getItem('royal_user_phone');
+            if(!phone) return;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`);
+                const d = await res.json();
+                if(d.data && d.data.length > 0) {
+                    document.getElementById('vaultRes').innerHTML = d.data.map(i => `
+                        <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4">
+                            <div class="d-flex justify-content-between gold-text small mb-2"><span>${i.type}</span><span>${i.date}</span></div>
+                            <div class="small fw-bold text-secondary mb-1">أنتِ: ${i.userText || "..."}</div>
+                            <div class="small fw-bold mb-2">رويال مايند: ${i.aiText}</div>
+                            ${i.selfie ? `<img src="${i.selfie}" class="d-block mt-2 rounded" style="max-width:120px;">` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('vaultRes').innerHTML = `<p class="text-muted text-center small py-3">الذاكرة فارغة تماماً. تظل السجلات بيضاء بانتظار تجاربك الأولى.</p>`;
+                }
+            } catch(e) {
+                document.getElementById('vaultRes').innerHTML = `<p class="text-danger text-center small py-3">تعذر تحميل السجلات المركزية من الخادم.</p>`;
+            }
         }
 
-        async function clearVault() {
-            if(!confirm("محو كامل لذاكرة الوعي وفناء كل السجلات الملكية؟")) return;
-            await fetch(`${BACKEND_URL}/api/vault/clear`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ phone: localStorage.getItem('royal_user_phone') }) });
-            renderVault();
+        function promptClearVault() {
+            showRoyalConfirm("هل تودين محو كامل لذاكرة الوعي وفناء كل السجلات الملكية الخاصة بهاتفكِ؟", executeClearVault);
+        }
+
+        async function executeClearVault() {
+            const phone = localStorage.getItem('royal_user_phone');
+            try {
+                await fetch(`${BACKEND_URL}/api/vault?phone=${phone}`, { 
+                    method: 'DELETE'
+                });
+                showRoyalToast("🌌 تم تصفير فناء المدركات ومسح الذاكرة بنجاح.");
+                renderVault();
+            } catch(e) {
+                showRoyalToast("⚠️ فشل في محو السجلات المركزية.");
+            }
         }
     </script>
 </body>
