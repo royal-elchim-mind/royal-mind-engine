@@ -61,6 +61,7 @@
         </div>
     </div>
 
+    <!-- 🔒 بوابة الهوية الملكية لتسجيل دخول العميل -->
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px;">
             <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;" onerror="this.src='https://placehold.co/100x100?text=ROYAL'">
@@ -70,6 +71,7 @@
         </div>
     </div>
 
+    <!-- 👑 الهيدر العلوي وشعار البراند -->
     <div class="container pt-4 text-center">
         <div id="mainRoyalLogo" class="royal-logo-container">
             <img src="logo.jpg" alt="Royal Elchim Logo" onerror="this.src='https://placehold.co/100x100?text=ROYAL'">
@@ -92,22 +94,24 @@
             </div>
         </div>
 
-        <!-- 2. شاشة فواتير المبيعات وكبار العملاء المحدثة بالكامل -->
+        <!-- 2. شاشة فواتير المبيعات وحساب كبار العملاء ذو الكود السري التام -->
         <div id="screen-b2b" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> حساب الفاتورة الديناميكي</h4>
                 
+                <!-- لوحة كود الجملة السري المؤمن بالكامل -->
                 <div class="p-3 border border-warning rounded mb-3" style="background: rgba(212, 175, 55, 0.05);">
-                    <label class="form-label small fw-bold gold-text">مربع كود الجملة السري (VIP):</label>
-                    <input type="text" id="vipSecretCode" class="form-control text-center font-monospace" placeholder="أدخل كود الجملة السري لتفعيل سعر الكارت 4">
-                    
-                    <!-- مولد كود تلقائي وشرح تفاعلي لكيفية الاستخدام -->
-                    <div class="mt-2 text-center">
-                        <small class="text-muted d-block mb-1">💡 لتخطي حساب الفاتورة والحصول على الكارت الرابع مباشرة:</small>
-                        <span id="generatedTodayCodeBadge" class="badge bg-warning text-dark p-2" style="cursor: pointer; border: 1px dashed #b58900;" onclick="applyTodaySecretCode()">
-                            انقر هنا لنسخ وتطبيق كود اليوم الفوري
-                        </span>
+                    <label class="form-label small fw-bold gold-text mb-2"><i class="fa-solid fa-key"></i> بوابة تفعيل حساب الجملة السري (VIP):</label>
+                    <div class="input-group">
+                        <input type="password" id="vipSecretCode" class="form-control text-center font-monospace" placeholder="أدخل كود الجملة الخاص بك لتطبيق الكارت 4">
+                        <button class="btn btn-outline-secondary" type="button" onclick="toggleSecretCodeVisibility()" style="border-color: #ced4da;">
+                            <i class="fa-solid fa-eye" id="toggleCodeIcon"></i>
+                        </button>
+                        <button class="btn gold-btn m-0" type="button" style="width: auto; border-radius: 8px 0 0 8px;" onclick="calculateLiveInvoice()">
+                            تطبيق وتفعيل السعر 👑
+                        </button>
                     </div>
+                    <small class="text-muted d-block text-end mt-1" style="font-size: 0.72rem;">* الكود مشفر ومحمي. عند كتابة الكود الصحيح، سيتم احتساب الكارت الرابع تلقائياً.</small>
                 </div>
 
                 <div id="invoiceItemsContainer" class="mb-3">
@@ -249,6 +253,7 @@
         let imgs = { uB64: null, pB64: null };
         let activeInvoiceItems = [];
         let searchTimer = null;
+        let lastSearchResults = []; // تخزين آمن لنتائج البحث لمنع أخطاء الـ SyntaxError
         const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
         // =========================================================
@@ -269,7 +274,7 @@
             modal.style.display = 'flex';
             
             const yesBtn = document.getElementById('confirmYesBtn');
-            // Remove old listeners
+            // إزالة المستمعين القدامى لضمان عدم التكرار
             const newYesBtn = yesBtn.cloneNode(true);
             yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
             
@@ -284,28 +289,20 @@
         }
 
         // =========================================================
-        // [برمجة توليد وتطبيق الكود السري]
+        // [التحكم في رؤية الكود السري الخاص بالمستخدم البلاتيني]
         // =========================================================
-        function getTodayWholesaleCode() {
-            // توليد تاريخ اليوم بتوقيت القاهرة المحلي بتنسيق YYYY-MM-DD
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `simsim#${year}-${month}-${day}`;
-        }
-
-        // تحديث النص الظاهر على زر الكود السري
-        document.addEventListener('DOMContentLoaded', () => {
-            const todayCode = getTodayWholesaleCode();
-            document.getElementById('generatedTodayCodeBadge').innerText = `اضغط لنسخ وتطبيق كود اليوم: ${todayCode}`;
-        });
-
-        function applyTodaySecretCode() {
-            const todayCode = getTodayWholesaleCode();
-            document.getElementById('vipSecretCode').value = todayCode;
-            showRoyalToast("🔓 تم نسخ وتطبيق كود تاجر الجملة بنجاح!");
-            calculateLiveInvoice();
+        function toggleSecretCodeVisibility() {
+            const codeInput = document.getElementById('vipSecretCode');
+            const icon = document.getElementById('toggleCodeIcon');
+            if (codeInput.type === 'password') {
+                codeInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                codeInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
 
         // =========================================================
@@ -371,11 +368,12 @@
                 const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(q)}`);
                 const d = await res.json();
                 if(d.status === 'success' && d.data.length > 0) {
-                    container.innerHTML = d.data.map(item => `
+                    lastSearchResults = d.data; // حفظ البيانات محلياً لمنع كسر النصوص
+                    container.innerHTML = d.data.map((item, index) => `
                         <div class="glass-card mb-2 p-3 text-end">
                             <div class="d-flex justify-content-between align-items-center mb-2 text-wrap" style="gap:10px;">
                                 <span class="gold-text fw-bold" style="font-size:1.05rem; text-align:right;">${item.name}</span>
-                                <button class="btn btn-sm btn-outline-warning fw-bold flex-shrink-0" onclick='addtoInvoice(\"${encodeURIComponent(JSON.stringify(item))}\")'><i class="fa-solid fa-plus"></i> للفاتورة</button>
+                                <button class="btn btn-sm btn-outline-warning fw-bold flex-shrink-0" onclick="addtoInvoiceByIndex(${index})"><i class="fa-solid fa-plus"></i> للفاتورة</button>
                             </div>
                             <div class="mt-2 p-2 rounded" style="background: rgba(0,0,0,0.03);">
                                 <div class="d-flex justify-content-between small"><span>السعر الأساسي:</span> <span class="fw-bold text-success">${item.price} ج.م</span></div>
@@ -392,14 +390,17 @@
             }
         }
 
-        function addtoInvoice(encoded) {
-            const item = JSON.parse(decodeURIComponent(encoded));
+        function addtoInvoiceByIndex(index) {
+            const item = lastSearchResults[index];
+            if(!item) return;
             const exists = activeInvoiceItems.find(i => i.barcode === item.barcode);
             if(exists) {
                 exists.qty += 1;
             } else { 
-                item.qty = 1; 
-                activeInvoiceItems.push(item); 
+                // نسخ المنتج لتجنب الإشارة المباشرة وتعديل الكمية بشكل صحيح
+                const newItem = Object.assign({}, item);
+                newItem.qty = 1; 
+                activeInvoiceItems.push(newItem); 
             }
             showRoyalToast("✅ تم إدراج المنتج في سلة حساب الفاتورة."); 
             renderInvoiceDOM(); 
@@ -424,7 +425,7 @@
                 return;
             }
             container.innerHTML = activeInvoiceItems.map((item, idx) => {
-                // تنظيف الاسم من وسم HTML للعرض النظيف
+                // إزالة وسوم HTML من الإسم للعرض بشكل نظيف في السلة
                 const cleanName = item.name.replace(/<[^>]*>/g, '').split('🌐')[0].trim();
                 return `
                     <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded mb-2 text-end shadow-sm">
@@ -443,7 +444,6 @@
                 return;
             }
 
-            // رسم الفاتورة على الخادم لمطابقة البيانات بشكل آمن ومحمي
             const mappedItems = activeInvoiceItems.map(item => {
                 const cleanName = item.name.replace(/<[^>]*>/g, '').split('🌐')[0].trim();
                 return {
@@ -470,6 +470,7 @@
                     let tierText = `الكارت ${d.tier_applied}`;
                     if(d.is_wholesale_code_used) {
                         tierText += " 👑 (حساب تاجر الجملة الفوري)";
+                        showRoyalToast("🔓 تفعيل حساب الجملة بنجاح (سعر الكارت 4)");
                     } else if (d.tier_applied > 1) {
                         tierText += ` (خصم تلقائي لتخطي الشريحة)`;
                     } else {
@@ -561,7 +562,6 @@
             out.style.display = 'block'; 
             out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> جاري استخلاص نوتات الاستشارة...</p>";
             
-            // توجيه المحادثة الفنية للمستشار الجمالي عبر محرك الوعي المركزي
             try {
                 const res = await fetch(`${BACKEND_URL}/api/diagnose`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
