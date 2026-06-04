@@ -39,27 +39,22 @@
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #12121c, #24243e); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .manifesto-badge { border-right: 4px solid #b58900; padding-right: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.03); padding: 14px; border-radius: 6px; }
 
-        /* نظام الإشعارات الملكي */
         .royal-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px); opacity: 0; background: rgba(26, 26, 46, 0.95); color: #fff; border: 1px solid #b58900; border-radius: 12px; padding: 15px 30px; z-index: 10000; box-shadow: 0 10px 30px rgba(181,137,0,0.35); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; pointer-events: none; }
         .royal-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         
-        /* نافذة محاكاة الكاميرا لـ Face ID */
         #cameraModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10001; display: none; align-items: center; justify-content: center; flex-direction: column; }
         #cameraContainer { position: relative; width: 320px; height: 320px; border-radius: 50%; overflow: hidden; border: 4px solid #b58900; box-shadow: 0 0 30px rgba(181,137,0,0.6); background: #000; }
         #cameraVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .face-scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, transparent, #e5b82c, transparent); animation: scanEffect 2s linear infinite; box-shadow: 0 0 10px #e5b82c; }
         @keyframes scanEffect { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
 
-        /* نافذة التأكيد الملكي */
         #royalConfirmModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <!-- إشعار ملكي مخصص -->
     <div id="royalToast" class="royal-toast"></div>
 
-    <!-- نافذة تأكيد الإجراءات -->
     <div id="royalConfirmModal" class="d-none">
         <div class="glass-card text-center shadow-lg" style="width: 320px; background: #fff; border: 2px solid #b58900;">
             <h5 class="gold-text mb-3" id="confirmTitle">تأكيد الإجراء الملكي</h5>
@@ -71,7 +66,6 @@
         </div>
     </div>
 
-    <!-- نافذة مسح الكاميرا للتعرف على الوجه -->
     <div id="cameraModal">
         <h4 class="text-white mb-3 fw-bold" id="cameraModalTitle">جارٍ فحص الملامح الملكية...</h4>
         <div id="cameraContainer" class="mb-4">
@@ -84,21 +78,17 @@
         </div>
     </div>
 
-    <!-- شاشة تسجيل الدخول المبدئية -->
     <div id="authOverlay">
         <div class="glass-card text-center" style="width: 350px; border-color: rgba(181, 137, 0, 0.6); box-shadow: 0 15px 50px rgba(0,0,0,0.3);">
             <img src="logo.jpg" style="max-width: 100px; border-radius: 50%; border: 2px solid #b58900; padding: 5px; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/100'">
             <h4 class="gold-text">بوابة الهوية الملكية</h4>
             <p class="text-white-50 small">أدخل رقم الهاتف أو استخدم بصمة وجهك</p>
-            
             <input type="tel" id="royalPhoneInput" class="form-control text-center my-3 fw-bold border-warning" placeholder="أدخل رقم هاتف العميل">
-            
             <button class="gold-btn mb-2" onclick="authenticateUser()"><i class="fa-solid fa-key"></i> دخول القصر الملكي</button>
             <button class="btn btn-outline-warning w-100 fw-bold py-2 mt-1" onclick="openCameraForLogin()"><i class="fa-solid fa-face-viewfinder"></i> الدخول الذكي ببصمة الوجه</button>
         </div>
     </div>
 
-    <!-- الرأس الرئيسي مع معلومات الحساب -->
     <div class="container pt-4 text-center">
         <div id="mainRoyalLogo" class="royal-logo-container">
             <img src="logo.jpg" alt="Royal Elchim Logo" onerror="this.src='https://via.placeholder.com/100'">
@@ -109,7 +99,7 @@
     </div>
 
     <div class="container mt-2">
-        <!-- 1. شاشة الاستعلام والمخزون الديناميكي بالفروع الأربعة -->
+        <!-- 1. شاشة الاستعلام -->
         <div id="screen-search" class="app-screen active">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-barcode"></i> الفحص والمخزون الحقيقي بالفروع</h4>
@@ -122,7 +112,7 @@
             </div>
         </div>
 
-        <!-- 2. شاشة فواتير المبيعات وكبار العملاء -->
+        <!-- 2. شاشة الفواتير -->
         <div id="screen-b2b" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-file-invoice-dollar"></i> فواتير المبيعات</h4>
@@ -144,11 +134,14 @@
                     <small class="text-muted d-block mt-1">المنتجات المصنفة كـ (صافي) مستثناة تماماً من خصومات الشريحة.</small>
                 </div>
                 
-                <button class="gold-btn w-100 py-2 mb-2" onclick="calculateLiveInvoice()"><i class="fa-solid fa-arrows-rotate"></i> تحديث وحساب الفاتورة</button>
+                <div class="d-flex gap-2 mb-2">
+                    <button class="btn btn-success flex-grow-1 fw-bold py-2" onclick="shareInvoiceWhatsApp()"><i class="fa-brands fa-whatsapp"></i> مشاركة الفاتورة</button>
+                    <button class="gold-btn flex-grow-1 py-2 m-0" onclick="calculateLiveInvoice()"><i class="fa-solid fa-arrows-rotate"></i> تحديث وحساب</button>
+                </div>
             </div>
         </div>
 
-        <!-- 3. شاشة العطور والتركيب الكيميائي بالجرام -->
+        <!-- 3. شاشة العطور -->
         <div id="screen-perfume" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-spray-can-sparkles"></i> الأثر العطري والتركيب بالجرامات</h4>
@@ -161,7 +154,7 @@
             </div>
         </div>
 
-        <!-- 4. شاشة مستشار المكياج والعلاج البصري -->
+        <!-- 4. شاشة مستشار المكياج -->
         <div id="screen-makeup" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-paintbrush"></i> استشارات الميكب العلاجي والتجميلي</h4>
@@ -174,12 +167,11 @@
             </div>
         </div>
 
-        <!-- 5. شاشة الواقع المعزز ومختبر النحت البصري ومسح الـ Face ID -->
+        <!-- 5. شاشة الواقع المعزز -->
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> مختبر النحت البصري والواقع المعزز HD</h4>
                 
-                <!-- قسم ربط وتوثيق Face ID للعميل الحالي -->
                 <div class="p-3 border border-warning rounded mb-4 text-center" style="background: rgba(181, 137, 0, 0.05);">
                     <h6 class="gold-text fw-bold mb-2"><i class="fa-solid fa-fingerprint"></i> حماية وتأمين الهوية الملكية (Face ID)</h6>
                     <p class="small text-muted mb-3">قومي بتسجيل هندسة ملامح وجهكِ لتمكين تسجيل الدخول البصري الفوري وتفادي إدخال الأرقام.</p>
@@ -215,7 +207,7 @@
             </div>
         </div>
 
-        <!-- 6. شاشة رويال مايند معاكِ للأبد -->
+        <!-- 6. شاشة التشخيص -->
         <div id="screen-diagnosis" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-infinity"></i> رويال مايند معاكِ للأبد</h4>
@@ -229,7 +221,7 @@
             </div>
         </div>
 
-        <!-- 7. شاشة الفلسفة والمانيفستو -->
+        <!-- 7. شاشة الفلسفة -->
         <div id="screen-manifesto" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-open-reader"></i> المانيفستو الفلسفي الملكي</h4>
@@ -240,7 +232,7 @@
             </div>
         </div>
 
-        <!-- 8. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
+        <!-- 8. شاشة الذاكرة التراكمية -->
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
@@ -250,7 +242,7 @@
             </div>
         </div>
 
-        <!-- 9. شاشة بوابة الإدارة والنظام المحاسبي -->
+        <!-- 9. شاشة بوابة الإدارة -->
         <div id="screen-admin" class="app-screen">
             <div class="glass-card text-center py-5">
                 <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة المركزية والمحاسبة</h4>
@@ -259,7 +251,7 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي المطور المنسق -->
+    <!-- شريط التنقل السفلي -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>الاستعلام</span></div>
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>الفواتير</span></div>
@@ -279,8 +271,8 @@
         let confirmPromiseResolver = null;
         let searchResultsCached = []; 
         let currentUtterance = null;
+        let currentInvoiceTier = 1; 
         
-        // المحرك الصوتي المطور للقراءة (TTS)
         function speakText(text, btnElement) {
             if (!text) return;
             if (window.speechSynthesis.speaking) {
@@ -359,18 +351,6 @@
 
         let mediaStream = null;
         let cameraPurpose = 'login'; 
-
-        window.addEventListener('load', () => {
-            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
-                const secureUrl = window.location.href.replace('http://', 'https://');
-                askRoyalConfirmation(
-                    "⚠️ تحذير أمان الكاميرا للهواتف",
-                    "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط المشفر."
-                ).then((confirmed) => {
-                    if (confirmed) window.location.href = secureUrl;
-                });
-            }
-        });
 
         function showRoyalNotification(message, type = "success") {
             const toast = document.getElementById('royalToast');
@@ -489,8 +469,6 @@
             try {
                 const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
                 if (!response.ok) {
-                    const errText = await response.text();
-                    console.error(`API Error [${response.status}]:`, errText);
                     throw new Error(`خطأ سيرفر (${response.status})`);
                 }
                 return await response.json();
@@ -524,7 +502,7 @@
                             
                             <div class="d-flex justify-content-between mt-3 align-items-center">
                                 <div><small class="text-muted d-block">باركود: <b>${item.barcode}</b></small><span class="h5 gold-text fw-bold mt-1 d-block">${item.price1} ج.م</span></div>
-                                ${item.link ? `<a href="${item.link}" target="_blank" class="btn btn-sm gold-btn py-2 px-3" style="max-width:110px;"><i class="fa-solid fa-bag-shopping"></i> اقتناء</a>` : ''}
+                                ${item.link && item.show_link ? `<a href="${item.link}" target="_blank" class="btn btn-sm gold-btn py-2 px-3" style="max-width:110px;"><i class="fa-solid fa-bag-shopping"></i> اقتناء</a>` : ''}
                             </div>
                         </div>
                     `).join('');
@@ -553,9 +531,7 @@
                 showRoyalNotification("تم إدراج الصنف بنجاح في فاتورتكِ الجارية.");
                 renderInvoiceDOM(); 
                 calculateLiveInvoice();
-            } catch(e) {
-                console.error("Error adding item to invoice:", e);
-            }
+            } catch(e) {}
         }
 
         function renderInvoiceDOM() {
@@ -596,6 +572,7 @@
             if (activeInvoiceItems.length === 0) {
                 document.getElementById('invoiceFinalTotal').innerText = "0";
                 document.getElementById('invoiceTierName').innerText = "حساب قياسي (الكارت الأول)";
+                currentInvoiceTier = 1;
                 return;
             }
             try {
@@ -608,29 +585,64 @@
                         secret_code: secret 
                     })
                 });
-                if(d.status === 'success' || d.tier) {
+                if(d.tier) {
+                    currentInvoiceTier = d.tier;
                     let tierText = "الكارت الأول (السعر الأساسي)";
                     if (d.tier === 2) tierText = "الكارت الثاني (خصم 10%)";
                     else if (d.tier === 3) tierText = "الكارت الثالث (خصم 15%)";
-                    else if (d.tier === 4) {
-                        tierText = d.is_wholesale ? "الكارت الرابع (حساب تاجر الجملة الفوري 👑)" : "الكارت الرابع (خصم 20% لتخطي حاجز 3500)";
-                    }
+                    else if (d.tier === 4) tierText = "الكارت الرابع (تاجر جملة / VIP 👑)";
+                    
                     document.getElementById('invoiceTierName').innerText = tierText;
                     document.getElementById('invoiceFinalTotal').innerText = d.total.toLocaleString('ar-EG', {minimumFractionDigits: 2});
-                    if (d.is_wholesale) {
-                        showRoyalNotification("تم التحقق من كود الجملة! تطبيق أسعار الكارت الرابع بنجاح 👑");
-                    }
                 }
             } catch (e) {
                 showRoyalNotification("خطأ في الاتصال بخوارزميات الفوترة.", "error");
             }
         }
 
+        function shareInvoiceWhatsApp() {
+            if (activeInvoiceItems.length === 0) {
+                return showRoyalNotification("الفاتورة فارغة! أضف أصنافاً أولاً.", "error");
+            }
+
+            const phone = localStorage.getItem('royal_user_phone') || "عميل غير مسجل";
+            const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,"");
+            const randStr = Math.floor(1000 + Math.random() * 9000);
+            const invoiceNumber = `INV-${dateStr}-${randStr}`;
+            const finalTotal = document.getElementById('invoiceFinalTotal').innerText;
+
+            let msg = `🧾 *فاتورة Royal Elchim*\n`;
+            msg += `رقم الفاتورة: ${invoiceNumber}\n`;
+            msg += `التاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
+            msg += `العميل: ${phone}\n`;
+            msg += `نوع الحساب: ${document.getElementById('invoiceTierName').innerText}\n`;
+            msg += `------------------------\n\n`;
+
+            activeInvoiceItems.forEach(item => {
+                let finalItemPrice = item.price1;
+                if (!item.is_fixed) {
+                    if (currentInvoiceTier === 2) finalItemPrice = item.price1 * 0.9;
+                    else if (currentInvoiceTier === 3) finalItemPrice = item.price1 * 0.85;
+                    else if (currentInvoiceTier === 4) finalItemPrice = item.price1 * 0.8;
+                }
+                const itemTotal = finalItemPrice * item.qty;
+                msg += `🔸 ${item.name} ×${item.qty}\n`;
+                msg += `   ${itemTotal.toLocaleString('ar-EG', {minimumFractionDigits: 2})} ج.م ${item.is_fixed ? '(صافي)' : ''}\n\n`;
+            });
+
+            msg += `------------------------\n`;
+            msg += `*الإجمالي النهائي: ${finalTotal} ج.م*\n\n`;
+            msg += `شكراً لزيارتكم إمبراطورية رويال الكيم ❤️\n`;
+            msg += `Royal Elchim`;
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
         async function runSim() {
             if (!imgs.uB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
             const out = document.getElementById('simResponse'); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-wand-magic-sparkles fa-spin'></i> جاري ضبط مصفوفات النحت المعزز والواقع الافتراضي...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-wand-magic-sparkles fa-spin'></i> جاري ضبط مصفوفات النحت المعزز...</p>";
             try {
                 const mode = document.getElementById('masterMode').value;
                 const d = await apiFetch('/api/simulate_master', {
@@ -654,7 +666,7 @@
                     appendListenButton(simTextContainer, d.simulation_result);
                     renderVault(); 
                 } else {
-                    out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية. يرجى المحاولة بصورة أوضح.</p>";
+                    out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية.</p>";
                 }
             } catch(e) {
                 out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات.</p>";
@@ -666,7 +678,7 @@
             if(!inputVal) return showRoyalNotification("يرجى وصف روحك العطرية أولاً.", "error");
             const out = document.getElementById('perfumeResponse'); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يمزج الخيميائي الملكي الجرامات الفلكية ويفك طلاسم الهالة الروحية...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-spinner fa-spin'></i> يمزج الخيميائي الملكي الجرامات الفلكية...</p>";
             try {
                 const d = await apiFetch('/api/craft_perfume', {
                     method: 'POST', 
@@ -680,16 +692,16 @@
                 appendListenButton(out, d.answer);
                 renderVault();
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الخيميائي في مزج النوتات الحالية.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل الخيميائي في المزج.</p>";
             }
         }
 
         async function runDiagnosis() {
             const inputVal = document.getElementById('diagnosisInput').value.trim();
-            if(!inputVal) return showRoyalNotification("تحدثي إلي بما يجول في خاطركِ أولاً.", "error");
+            if(!inputVal) return showRoyalNotification("تحدثي إلي أولاً.", "error");
             const out = document.getElementById('diagResponse'); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> تستوعب رويال مايند الوجدان وتُقطّر الحكمة الحياتية...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> تستوعب رويال مايند الوجدان...</p>";
             try {
                 const d = await apiFetch('/api/diagnose', {
                     method: 'POST', 
@@ -703,7 +715,7 @@
                 appendListenButton(out, d.diagnosis);
                 renderVault();
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الاتصال بالمستشار الوجداني.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل الاتصال.</p>";
             }
         }
 
@@ -712,7 +724,7 @@
             if(!inputVal) return showRoyalNotification("يرجى كتابة التفاصيل أولاً.", "error");
             const out = document.getElementById(outId); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول الجمالي ونحت الملامح...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول...</p>";
             try {
                 const d = await apiFetch('/api/diagnose', {
                     method: 'POST', 
@@ -726,7 +738,7 @@
                 appendListenButton(out, d.diagnosis);
                 renderVault();
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل محرك التحليل الجمالي.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل محرك التحليل.</p>";
             }
         }
 
@@ -738,8 +750,6 @@
                 if(d.status === 'success' && d.data.length > 0) {
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
-                        
-                        // ✅ إصلاح روابط الصور (Mixed Content) لاستخدام https دائماً
                         if (i.selfie) i.selfie = i.selfie.replace('http://', 'https://');
                         if (i.product) i.product = i.product.replace('http://', 'https://');
 
@@ -750,33 +760,24 @@
                                     ${i.product ? `<img src="${i.product}" class="d-inline-block rounded shadow-sm" style="max-height:120px; border: 1px solid #b58900;">` : ''}
                                     <button class="btn btn-sm btn-danger position-absolute top-0 start-0 rounded-circle shadow" 
                                             style="width:30px; height:30px; padding:0; transform: translate(-30%, -30%); z-index:5;" 
-                                            onclick="deleteVaultImage('${i.id}')" title="مسح الصور المرفقة والاحتفاظ بالنص فقط">
+                                            onclick="deleteVaultImage('${i.id}')">
                                         <i class="fa-solid fa-times"></i>
                                     </button>
                                 </div>
                             `;
                         }
-
                         return `
-                            <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4" style="animation: fadeIn 0.3s ease-out;">
+                            <div class="mb-3 p-3 bg-white rounded shadow-sm text-end border-end border-warning border-4">
                                 <div class="d-flex justify-content-between gold-text small mb-2">
                                     <span>${i.type}</span>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none vault-speak-btn" data-index="${index}" title="استماع للنص">
-                                            <i class="fa-solid fa-volume-high"></i> استماع
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-sm btn-link text-primary p-0 vault-speak-btn" data-index="${index}"><i class="fa-solid fa-volume-high"></i> استماع</button>
                                     <span dir="ltr">${i.date}</span>
                                 </div>
                                 <div class="small fw-bold text-secondary mb-1">أنت: ${i.userText || "..."}</div>
                                 <div class="small fw-bold mb-2 text-dark">رويال: ${i.aiText}</div>
-                                
                                 ${imagesHtml}
-
                                 <div class="text-start mt-3">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteVaultRecord('${i.id}')" title="حذف هذه الجلسة بالكامل من التاريخ">
-                                        <i class="fa-solid fa-trash-can"></i> حذف السجل نهائياً
-                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteVaultRecord('${i.id}')"><i class="fa-solid fa-trash-can"></i> حذف السجل</button>
                                 </div>
                             </div>
                         `;
@@ -785,64 +786,30 @@
                     document.querySelectorAll('.vault-speak-btn').forEach(btn => {
                         const index = btn.dataset.index;
                         const item = d.data[index];
-                        btn.onclick = (e) => {
-                            e.stopPropagation();
-                            speakText(item.aiText, btn);
-                        };
+                        btn.onclick = (e) => { e.stopPropagation(); speakText(item.aiText, btn); };
                     });
                 } else {
-                    document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>الذاكرة التاريخية فارغة حالياً.</p>";
+                    document.getElementById('vaultRes').innerHTML = "<p class='text-muted text-center py-4'>الذاكرة فارغة.</p>";
                 }
-            } catch(e) {
-                document.getElementById('vaultRes').innerHTML = "<p class='text-danger text-center'>خطأ في تحميل الذاكرة.</p>";
-            }
+            } catch(e) {}
         }
 
         async function deleteVaultImage(recordId) {
-            const confirmed = await askRoyalConfirmation("تأكيد إزالة الصورة", "هل ترغبين في مسح الصور المرفقة فقط بغرض توفير المساحة، والاحتفاظ بالسجل النصي والفهم الوجداني لهذه الجلسة؟");
+            const confirmed = await askRoyalConfirmation("تأكيد", "هل ترغبين في مسح الصور؟");
             if(!confirmed) return;
             try {
-                const phone = localStorage.getItem('royal_user_phone');
-                const d = await apiFetch(`/api/vault/${recordId}/image?phone=${phone}`, { method: 'DELETE' });
-                if (d.status === 'success') {
-                    showRoyalNotification("تم مسح الصورة بنجاح مع الاحتفاظ بالسجل.");
-                    renderVault();
-                } else {
-                    showRoyalNotification(d.message || "فشل الحذف.", "error");
-                }
-            } catch (e) {
-                showRoyalNotification("خطأ في الاتصال بالخادم للحذف.", "error");
-            }
+                const d = await apiFetch(`/api/vault/${recordId}/image?phone=${localStorage.getItem('royal_user_phone')}`, { method: 'DELETE' });
+                if (d.status === 'success') { renderVault(); }
+            } catch (e) {}
         }
 
         async function deleteVaultRecord(recordId) {
-            const confirmed = await askRoyalConfirmation("تأكيد حذف السجل بالكامل", "هل أنت متأكد من حذف هذه الجلسة وتفاصيلها كلياً من الذاكرة المركزية؟");
+            const confirmed = await askRoyalConfirmation("تأكيد", "حذف الجلسة بالكامل؟");
             if(!confirmed) return;
             try {
-                const phone = localStorage.getItem('royal_user_phone');
-                const d = await apiFetch(`/api/vault/${recordId}?phone=${phone}`, { method: 'DELETE' });
-                if (d.status === 'success') {
-                    showRoyalNotification("تم الحذف بنجاح.");
-                    renderVault();
-                } else {
-                    showRoyalNotification(d.message || "فشل الحذف.", "error");
-                }
-            } catch (e) {
-                showRoyalNotification("خطأ في الاتصال.", "error");
-            }
-        }
-
-        async function clearVault() {
-            const confirmed = await askRoyalConfirmation("تأكيد فناء الذاكرة", "هل أنت متأكد من محو كامل لذاكرة الوعي وفناء السجلات الملكية الخاصة بهذا الهاتف للأبد؟");
-            if(!confirmed) return;
-            try {
-                const phone = localStorage.getItem('royal_user_phone');
-                await apiFetch(`/api/vault?phone=${phone}`, { method: 'DELETE' });
-                showRoyalNotification("تم فناء ومسح سجلات الذاكرة بالكامل من الخوادم.");
-                renderVault();
-            } catch(e) {
-                showRoyalNotification("خطأ في معالجة طلب المسح.", "error");
-            }
+                const d = await apiFetch(`/api/vault/${recordId}?phone=${localStorage.getItem('royal_user_phone')}`, { method: 'DELETE' });
+                if (d.status === 'success') { renderVault(); }
+            } catch (e) {}
         }
 
         async function openCamera(title, purpose) {
@@ -854,25 +821,18 @@
                 mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = mediaStream;
                 video.play();
-            } catch (err) {
-                showRoyalNotification("فشل الوصول للكاميرا المباشرة.", "error");
-                closeCamera();
-            }
+            } catch (err) { closeCamera(); }
         }
 
         function closeCamera() {
-            if (mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-                mediaStream = null;
-            }
+            if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
             document.getElementById('cameraModal').style.display = 'none';
         }
 
-        function openCameraForLogin() { openCamera("جارٍ فحص الملامح للتسجيل التلقائي...", "login"); }
+        function openCameraForLogin() { openCamera("جارٍ فحص الملامح...", "login"); }
         function openCameraForRegistration() {
-            const phone = localStorage.getItem('royal_user_phone');
-            if(!phone) return showRoyalNotification("سجلي دخول برقم هاتف أولاً لتوثيق الوجه به.", "error");
-            openCamera("جارٍ توثيق وبصم الوجه الملكي...", "registration");
+            if(!localStorage.getItem('royal_user_phone')) return showRoyalNotification("سجلي دخول برقم هاتف أولاً.", "error");
+            openCamera("جارٍ توثيق الوجه...", "registration");
         }
 
         async function captureSnapshot() {
@@ -881,68 +841,40 @@
             canvas.width = video.videoWidth > 0 ? video.videoWidth : 480;
             canvas.height = video.videoHeight > 0 ? video.videoHeight : 480;
             const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const b64 = canvas.toDataURL('image/jpeg', 0.85);
             closeCamera();
 
-            if (cameraPurpose === 'login') {
-                showRoyalNotification("جارٍ البحث في مصفوفة الهوية الملكية...");
-                try {
-                    const d = await apiFetch('/api/auth/face', {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ selfie: b64 })
-                    });
-                    if (d.status === 'success') {
-                        localStorage.setItem('royal_user_phone', d.phone);
-                        document.getElementById('authOverlay').style.display = 'none';
-                        document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + d.phone;
-                        showRoyalNotification(`تم التحقق من الهوية الملكية بنجاح!`);
-                        renderVault();
-                    } else if (d.status === 'needs_phone') {
-                        showRoyalNotification(d.message);
-                        let fallbackPhone = prompt("وجه جديد! يرجى كتابة رقم الهاتف لربطه بالملامح الملكية تلقائياً:");
-                        if (fallbackPhone && fallbackPhone.trim().length >= 5) {
-                            showRoyalNotification("جاري تسجيل وبصم الوجه...");
-                            const regD = await apiFetch('/api/auth/face', {
-                                method: 'POST', 
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ phone: fallbackPhone.trim(), selfie: b64 })
-                            });
-                            if (regD.status === 'success') {
-                                localStorage.setItem('royal_user_phone', regD.phone);
-                                document.getElementById('authOverlay').style.display = 'none';
-                                document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + regD.phone;
-                                showRoyalNotification("تم بصم الوجه وتسجيل الحساب بنجاح!");
-                                renderVault();
-                            }
+            showRoyalNotification("جارٍ المعالجة...");
+            try {
+                const d = await apiFetch('/api/auth/face', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: cameraPurpose === 'registration' ? localStorage.getItem('royal_user_phone') : null, selfie: b64 })
+                });
+                if (d.status === 'success') {
+                    localStorage.setItem('royal_user_phone', d.phone);
+                    document.getElementById('authOverlay').style.display = 'none';
+                    document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + d.phone;
+                    showRoyalNotification(`نجاح!`);
+                    renderVault();
+                } else if (d.status === 'needs_phone') {
+                    let fallbackPhone = prompt("وجه جديد! يرجى كتابة رقم الهاتف:");
+                    if (fallbackPhone && fallbackPhone.trim().length >= 5) {
+                        const regD = await apiFetch('/api/auth/face', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phone: fallbackPhone.trim(), selfie: b64 })
+                        });
+                        if (regD.status === 'success') {
+                            localStorage.setItem('royal_user_phone', regD.phone);
+                            document.getElementById('authOverlay').style.display = 'none';
+                            document.getElementById('userDisplay').innerText = "العميل الملكي النشط: " + regD.phone;
+                            showRoyalNotification("تم الحفظ!");
+                            renderVault();
                         }
-                    } else {
-                        showRoyalNotification(d.message || "عذراً، لم نتمكن من العثور على ملامحك بالسجلات.", "error");
                     }
-                } catch (e) {
-                    showRoyalNotification("خطأ في الاتصال بنظام المطابقة الرقمية الموحد.", "error");
-                }
-            } else {
-                const phone = localStorage.getItem('royal_user_phone');
-                showRoyalNotification("جارٍ استخلاص التوقيع الهندسي لبصمتكِ...");
-                try {
-                    const d = await apiFetch('/api/auth/face', {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone: phone, selfie: b64 })
-                    });
-                    if (d.status === 'success') {
-                        showRoyalNotification("تم توثيق وبصم ملامح وجهك الملكي بنجاح في السجلات!");
-                    } else {
-                        showRoyalNotification(d.message || "فشل تسجيل البصمة، يرجى إعادة المحاولة.", "error");
-                    }
-                } catch (e) {
-                    showRoyalNotification("خطأ في إرسال هندسة الملامح الملكية.", "error");
-                }
-            }
+                } else { showRoyalNotification(d.message || "خطأ", "error"); }
+            } catch (e) { showRoyalNotification("خطأ اتصال", "error"); }
         }
     </script>
 </body>
