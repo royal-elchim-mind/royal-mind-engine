@@ -148,44 +148,7 @@
             </div>
         </div>
 
-        <!-- 3. شاشة صالون الشعر والصبغات (القسم الجديد) -->
-        <div id="screen-hair" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-scissors"></i> مصفف الشعر الملكي العالمي</h4>
-                <p class="text-muted small text-center mb-4">اكتشفي أحدث القصات العالمية وجربي ألوان الصبغات مباشرة لتري كيف تبرز جمال ملامحك.</p>
-                
-                <div class="row mb-3 align-items-center">
-                    <div class="col-8">
-                        <label class="form-label small fw-bold text-dark">اختر لون الصبغة:</label>
-                        <input type="color" id="hairDyeColor" class="form-control form-control-color w-100 border-warning" value="#8B4513" title="اختر لون الصبغة">
-                    </div>
-                    <div class="col-4 text-center">
-                        <span class="small text-muted d-block mt-2" id="colorHexDisplay">#8B4513</span>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">وجهكِ (Face ID)<input type="file" hidden accept="image/*" onchange="pre(this, 'hairUPre', 'hairUB64')"></label>
-                        <div id="hairUPre" class="preview-box"></div>
-                    </div>
-                    <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">صورة القصة (Style)<input type="file" hidden accept="image/*" onchange="pre(this, 'hairPPre', 'hairPB64')"></label>
-                        <div id="hairPPre" class="preview-box"></div>
-                    </div>
-                </div>
-                
-                <div class="position-relative mb-3">
-                    <textarea id="hairCommentInput" class="form-control text-end" rows="2" placeholder="أخبري المصفف بملاحظاتك (مثال: أريد قصة تخفي الجبهة العريضة)..." style="padding-left: 55px;"></textarea>
-                    <button class="mic-btn" style="bottom: 5px;" onclick="startVoiceRecognition('hairCommentInput', this)"><i class="fa-solid fa-microphone"></i></button>
-                </div>
-
-                <button class="gold-btn w-100 py-2" onclick="runHairSim()">دمج القصة واللون واستخراج التحليل <i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                <div id="hairSimResponse" class="royal-response" style="display:none; background:white;"></div>
-            </div>
-        </div>
-
-        <!-- 4. شاشة العطور والتركيب الكيميائي بالجرام -->
+        <!-- 3. شاشة العطور والتركيب الكيميائي بالجرام -->
         <div id="screen-perfume" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-spray-can-sparkles"></i> الأثر العطري والتركيب بالجرامات</h4>
@@ -198,7 +161,7 @@
             </div>
         </div>
 
-        <!-- 5. شاشة مستشار المكياج والعلاج البصري -->
+        <!-- 4. شاشة مستشار المكياج والعلاج البصري -->
         <div id="screen-makeup" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-paintbrush"></i> استشارات الميكب العلاجي والتجميلي</h4>
@@ -211,7 +174,7 @@
             </div>
         </div>
 
-        <!-- 6. شاشة الواقع المعزز ومختبر النحت البصري ومسح الـ Face ID -->
+        <!-- 5. شاشة الواقع المعزز ومختبر النحت البصري ومسح الـ Face ID -->
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-camera-retro"></i> مختبر النحت البصري والواقع المعزز HD</h4>
@@ -243,7 +206,7 @@
                         <div id="uPre" class="preview-box"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">العدسة/الميكب<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">القصة/العدسة<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
                         <div id="pPre" class="preview-box"></div>
                     </div>
                 </div>
@@ -252,7 +215,7 @@
             </div>
         </div>
 
-        <!-- 7. شاشة رويال مايند معاكِ للأبد -->
+        <!-- 6. شاشة رويال مايند معاكِ للأبد -->
         <div id="screen-diagnosis" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-infinity"></i> رويال مايند معاكِ للأبد</h4>
@@ -266,7 +229,7 @@
             </div>
         </div>
 
-        <!-- 8. شاشة الفلسفة والمانيفستو -->
+        <!-- 7. شاشة الفلسفة والمانيفستو -->
         <div id="screen-manifesto" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-open-reader"></i> المانيفستو الفلسفي الملكي</h4>
@@ -277,7 +240,7 @@
             </div>
         </div>
 
-        <!-- 9. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
+        <!-- 8. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
@@ -287,7 +250,7 @@
             </div>
         </div>
 
-        <!-- 10. شاشة بوابة الإدارة والنظام المحاسبي -->
+        <!-- 9. شاشة بوابة الإدارة والنظام المحاسبي -->
         <div id="screen-admin" class="app-screen">
             <div class="glass-card text-center py-5">
                 <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة المركزية والمحاسبة</h4>
@@ -300,7 +263,6 @@
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>الاستعلام</span></div>
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>الفواتير</span></div>
-        <div class="nav-item" onclick="switchTab('hair', this)"><i class="fa-solid fa-scissors"></i><span>الشعر</span></div>
         <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
         <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
         <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>بصري</span></div>
@@ -311,8 +273,7 @@
     </div>
 
     <script>
-        // دمج متغيرات الصور كلها في مكان واحد
-        let imgs = { uB64: null, pB64: null, hairUB64: null, hairPB64: null };
+        let imgs = { uB64: null, pB64: null };
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
@@ -394,30 +355,19 @@
             parentElement.appendChild(btn);
         }
 
-        // ==========================================
-        // ⚠️ هنا تم تعديل الرابط ليتصل بالخادم المحلي الخاص بك
-        // ==========================================
-        const BACKEND_URL = "http://localhost:7860"; 
+        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
         let mediaStream = null;
         let cameraPurpose = 'login'; 
 
         window.addEventListener('load', () => {
-            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
                 const secureUrl = window.location.href.replace('http://', 'https://');
                 askRoyalConfirmation(
                     "⚠️ تحذير أمان الكاميرا للهواتف",
                     "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط المشفر."
                 ).then((confirmed) => {
                     if (confirmed) window.location.href = secureUrl;
-                });
-            }
-            
-            // تهيئة لون الصبغة المبدئي
-            const colorPicker = document.getElementById('hairDyeColor');
-            if (colorPicker) {
-                colorPicker.addEventListener('input', function() {
-                    document.getElementById('colorHexDisplay').innerText = this.value.toUpperCase();
                 });
             }
         });
@@ -504,7 +454,6 @@
             if(id === 'vault') renderVault();
         }
 
-        // دالة موحدة لرفع الصور
         function pre(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
@@ -677,51 +626,6 @@
             }
         }
 
-        // --- دالة تشغيل محاكاة الشعر ---
-        async function runHairSim() {
-            if (!imgs.hairUB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
-            if (!imgs.hairPB64) return showRoyalNotification("يرجى رفع صورة لقصة الشعر المطلوبة للدمج.", "error");
-            
-            const out = document.getElementById('hairSimResponse'); 
-            out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-scissors fa-spin'></i> جارٍ هندسة القصة ومزج الصبغة مع ملامحك...</p>";
-            
-            try {
-                const dyeColor = document.getElementById('hairDyeColor').value;
-                const userComment = document.getElementById('hairCommentInput').value;
-
-                const d = await apiFetch('/api/simulate_master', {
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        user_selfie: imgs.hairUB64, 
-                        product_image: imgs.hairPB64,
-                        makeup_type: "hair_custom", 
-                        hair_color: dyeColor,
-                        user_comment: userComment,
-                        phone: localStorage.getItem('royal_user_phone') || "01000000000"
-                    })
-                });
-                
-                if(d.status === 'success') { 
-                    out.innerHTML = `
-                        <div class="text-center mb-3">
-                            <img src="${d.result_image}" class="img-fluid rounded border border-warning shadow" style="max-height: 300px;">
-                        </div>
-                        <div id="hairTextContainer" class="text-end p-2 fs-6" style="line-height: 1.8;">${d.simulation_result}</div>
-                    `; 
-                    const hairTextContainer = document.getElementById('hairTextContainer');
-                    appendListenButton(hairTextContainer, d.simulation_result);
-                    renderVault(); 
-                } else {
-                    out.innerHTML = "<p class='text-danger'>فشلت محاكاة الشعر. يرجى المحاولة بصورة إضاءتها أوضح.</p>";
-                }
-            } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات.</p>";
-            }
-        }
-
-        // --- دالة تشغيل محاكاة المكياج والعدسات ---
         async function runSim() {
             if (!imgs.uB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
             const out = document.getElementById('simResponse'); 
