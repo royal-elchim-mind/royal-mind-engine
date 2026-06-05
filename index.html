@@ -311,6 +311,7 @@
     </div>
 
     <script>
+        // دمج متغيرات الصور كلها في مكان واحد
         let imgs = { uB64: null, pB64: null, hairUB64: null, hairPB64: null };
         let activeInvoiceItems = [];
         let searchTimer = null;
@@ -393,13 +394,16 @@
             parentElement.appendChild(btn);
         }
 
-        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
+        // ==========================================
+        // ⚠️ هنا تم تعديل الرابط ليتصل بالخادم المحلي الخاص بك
+        // ==========================================
+        const BACKEND_URL = "http://localhost:7860"; 
 
         let mediaStream = null;
         let cameraPurpose = 'login'; 
 
         window.addEventListener('load', () => {
-            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 const secureUrl = window.location.href.replace('http://', 'https://');
                 askRoyalConfirmation(
                     "⚠️ تحذير أمان الكاميرا للهواتف",
@@ -500,6 +504,7 @@
             if(id === 'vault') renderVault();
         }
 
+        // دالة موحدة لرفع الصور
         function pre(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
