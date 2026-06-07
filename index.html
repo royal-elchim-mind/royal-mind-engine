@@ -522,8 +522,9 @@
 
         async function apiFetch(endpoint, options = {}) {
             try {
-                // التأكد من بناء رابط كامل وصحيح لتجنب خطأ Failed to parse URL
-                const baseUrl = BACKEND_URL && BACKEND_URL !== "" ? BACKEND_URL : window.location.origin;
+                // التأكد من بناء رابط كامل وصحيح لتجنب خطأ Failed to parse URL في البيئات المغلقة
+                const fallbackOrigin = (!window.location.origin || window.location.origin === "null") ? "http://localhost:7860" : window.location.origin;
+                const baseUrl = (BACKEND_URL && BACKEND_URL.trim() !== "") ? BACKEND_URL : fallbackOrigin;
                 const url = baseUrl.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
                 
                 const response = await fetch(url, options);
