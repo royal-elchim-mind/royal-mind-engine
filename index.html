@@ -266,18 +266,7 @@
             </div>
         </div>
 
-        <!-- 8. شاشة الفلسفة والمانيفستو -->
-        <div id="screen-manifesto" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-open-reader"></i> المانيفستو الفلسفي الملكي</h4>
-                <p class="text-center small text-warning mb-4" style="font-style: italic; font-weight: bold;">"العطر فكرة تُشم، لا تُقال. فلسفة تُقطّر، لا تُنتَج."</p>
-                <div class="manifesto-badge"><h5>👑 بلاك رويال – الأسد</h5><p class="small text-muted m-0">قوة الإرادة والشغف الكيميائي المطلق والسيطرة اللامتناهية.</p></div>
-                <div class="manifesto-badge"><h5>🐺 رويال شادو – العقرب</h5><p class="small text-muted m-0">الغموض، الكبرياء البصري، والتحكم المطلق في المجهول العطري.</p></div>
-                <div class="manifesto-badge"><h5>🪶 رويال شاين – القوس</h5><p class="small text-muted m-0">الجمال الاستعراضي النادر الحضور والثقة الزلزالية الساحرة.</p></div>
-            </div>
-        </div>
-
-        <!-- 9. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
+        <!-- 8. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
@@ -287,7 +276,7 @@
             </div>
         </div>
 
-        <!-- 10. شاشة بوابة الإدارة والنظام المحاسبي -->
+        <!-- 9. شاشة بوابة الإدارة والنظام المحاسبي -->
         <div id="screen-admin" class="app-screen">
             <div class="glass-card text-center py-5">
                 <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة المركزية والمحاسبة</h4>
@@ -305,7 +294,6 @@
         <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
         <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>بصري</span></div>
         <div class="nav-item" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
-        <div class="nav-item" onclick="switchTab('manifesto', this)"><i class="fa-solid fa-book-open-reader"></i><span>فلسفة</span></div>
         <div class="nav-item" onclick="switchTab('vault', this)"><i class="fa-solid fa-folder-open"></i><span>الذاكرة</span></div>
         <div class="nav-item" onclick="switchTab('admin', this)"><i class="fa-solid fa-user-gear"></i><span>الإدارة</span></div>
     </div>
@@ -394,8 +382,8 @@
             parentElement.appendChild(btn);
         }
 
-        // المسار المحلي لأنك قمت بجمعهم في مكان واحد
-        const BACKEND_URL = ""; 
+        // الرابط المباشر للسيرفر لتجنب خطأ URL
+        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space"; 
 
         let mediaStream = null;
         let cameraPurpose = 'login'; 
@@ -534,7 +522,10 @@
 
         async function apiFetch(endpoint, options = {}) {
             try {
-                const url = BACKEND_URL ? `${BACKEND_URL}${endpoint}` : endpoint;
+                // التأكد من بناء رابط كامل وصحيح لتجنب خطأ Failed to parse URL
+                const baseUrl = BACKEND_URL && BACKEND_URL !== "" ? BACKEND_URL : window.location.origin;
+                const url = baseUrl.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+                
                 const response = await fetch(url, options);
                 if (!response.ok) {
                     const errText = await response.text();
@@ -748,7 +739,7 @@
                     out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية. يرجى المحاولة بصورة أوضح.</p>";
                 }
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل الاتصال بم محرك الرسوميات.</p>";
             }
         }
 
@@ -1038,4 +1029,3 @@
     </script>
 </body>
 </html>
-```
