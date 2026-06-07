@@ -75,6 +75,51 @@
             color: #4a4a5a;
             line-height: 1.6;
         }
+
+        /* المساعد الوجداني التفاعلي ورؤية رويال مايند المحدثة */
+        .interactive-assistant {
+            background: rgba(181, 137, 0, 0.04);
+            border: 1px dashed #b58900;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            transition: all 0.3s ease-in-out;
+        }
+        .assistant-badge {
+            font-size: 0.75rem;
+            background-color: #b58900;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .interactive-question {
+            font-size: 0.92rem;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .suggested-option {
+            background: #fff;
+            border: 1px solid rgba(181, 137, 0, 0.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            color: #333;
+            cursor: pointer;
+            display: inline-block;
+            margin: 4px;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .suggested-option:hover {
+            background: #b58900;
+            color: #fff;
+            border-color: #b58900;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(181, 137, 0, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -290,8 +335,8 @@
 
                 <div class="row mb-3">
                     <div class="col-6">
-                        <!-- تم التحديث لـ 9 اختيارات لتطابق مصفوفة الـ ZONES الملكية المحدثة بالسيرفر -->
-                        <select id="masterMode" class="form-select fw-bold text-center border-warning">
+                        <!-- مصفوفة الخيارات التسعة الملكية المحدثة بالكامل -->
+                        <select id="masterMode" class="form-select fw-bold text-center border-warning" onchange="updateInteractiveAssistant()">
                             <option value="lenses">💎 عدسات ملكية (تغيير بؤبؤ العين)</option>
                             <option value="lips">💄 أحمر شفاه مخملي ساطع</option>
                             <option value="eyeshadow">👁️ ظلال عيون سحرية</option>
@@ -304,16 +349,28 @@
                         </select>
                     </div>
                     <div class="col-6">
-                        <input type="text" id="simProductName" class="form-control text-center" placeholder="اسم صنف التجميل أو درجته">
+                        <input type="text" id="simProductName" class="form-control text-center font-weight-bold" placeholder="صنف أو درجة التجميل">
                     </div>
                 </div>
-                <div class="row mb-3">
+
+                <!-- المساعد الجمالي التفاعلي والأسئلة الاسترشادية الجانبية -->
+                <div id="interactiveAssistantBox" class="interactive-assistant">
+                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                        <span class="assistant-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> رويال مايند المساعد الجمالي</span>
+                        <small class="text-muted">انقري لتعبئة الدرجة فوراً</small>
+                    </div>
+                    <div id="assistantQuestionContent">
+                        <!-- يتم تغذيته ديناميكياً بناء على الـ masterMode المختار -->
+                    </div>
+                </div>
+
+                <div class="row mb-3 mt-3">
                     <div class="col-6">
                         <label class="btn btn-outline-warning w-100 p-2 fw-bold">وجهكِ سيلفي<input type="file" hidden accept="image/*" onchange="pre(this, 'uPre', 'uB64')"></label>
                         <div id="uPre" class="preview-box"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">المنتج / العدسة<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">المنتج / العدسة (اختياري)<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
                         <div id="pPre" class="preview-box"></div>
                     </div>
                 </div>
@@ -376,6 +433,77 @@
         let confirmPromiseResolver = null;
         let searchResultsCached = []; 
         let currentUtterance = null;
+
+        // قاعدة بيانات الأسئلة التفاعلية والخيارات المقترحة لكل فئة تجميلية
+        const assistantDatabase = {
+            "lenses": {
+                question: "ما هو الطابع الملكي الذي تفضلينه للون ولون عينيكِ مع ملامحكِ؟",
+                options: ["عسلي دافئ (Hazel)", "رمادي غامض (Gray)", "أخضر زمردي (Emerald Green)", "أزرق سافير ملكي (Royal Blue)", "بني طبيعي هادئ"]
+            },
+            "lips": {
+                question: "اختر طابع ولون روج الشفاه المخملي الأنسب لهالتكِ اليومِ:",
+                options: ["أحمر كلاسيكي جريء", "وردي نود هادئ (Pink Nude)", "كشمير دافئ", "توتي ملكي عميق", "خوخي مشمشي منعش"]
+            },
+            "eyeshadow": {
+                question: "ما هي لوحة الألوان لتحديد محيط وهالة عينيكِ السحرية؟",
+                options: ["ألوان ترابية دافئة", "سموكي كلاسيكي غامض", "ذهبي برونزي للمناسبات", "وردي مخملي ناعم"]
+            },
+            "blush": {
+                question: "أي هالة توريد تودين نحت وإبراز وجنتيكِ بها الآن؟",
+                options: ["خوخي مشرق دافئ", "وردي ناعم طبيعي", "برونزي صيفي منحوت"]
+            },
+            "foundation": {
+                question: "صفي لون بشرتكِ لاختيار كريم الأساس (الفاونديشن) العلاجي الأنسب:",
+                options: ["بشرة فاتحة دافئة (Light Warm)", "بشرة حنطية طبيعية (Medium)", "بشرة سمراء ملكية (Deep)", "تغطية مخملية خفيفة جداً"]
+            },
+            "concealer": {
+                question: "ما هي الغاية الأساسية التي تودين معالجتها وتغطيتها بالكونسيلر الذكي؟",
+                options: ["إخفاء الهالات الداكنة بالكامل", "تنوير هالة تحت العين", "تغطية البقع والندوب الخفيفة"]
+            },
+            "highlighter": {
+                question: "ما هو بريق الإضاءة واللمعان المفضل لإظهار ملامح وجنتيكِ؟",
+                options: ["بريق ذهبي دافئ (Gold Glow)", "لؤلؤي بارد مشرق (Pearl Shimmer)", "برونزي صيفي جذاب (Bronze Shine)"]
+            },
+            "powder": {
+                question: "ما هي اللمسة النهائية التي تبحثين عنها لتثبيت مكياج بشرتكِ؟",
+                options: ["شفافة مطفية لامتصاص الدهون (Translucent)", "تغطية مخملية موحدة للون البشرة", "لمسة حريرية ناعمة مضيئة"]
+            },
+            "tint": {
+                question: "ما هو رونق توريد التينت الطبيعي الأقرب لهالتك الوجدانية اليوم؟",
+                options: ["أحمر كرزي ساطع (Cherry Red)", "وردي فراولة رقيق (Strawberry)", "خوخي طبيعي هادئ (Peach)"]
+            }
+        };
+
+        // تحديث المساعد الوجداني التفاعلي والأسئلة الاسترشادية الجانبية
+        function updateInteractiveAssistant() {
+            const mode = document.getElementById('masterMode').value;
+            const contentDiv = document.getElementById('assistantQuestionContent');
+            const data = assistantDatabase[mode];
+            
+            if (data) {
+                let optionsHtml = data.options.map(opt => 
+                    `<span class="suggested-option" onclick="fillSuggestedProduct('${opt}')">${opt}</span>`
+                ).join('');
+                
+                contentDiv.innerHTML = `
+                    <div class="interactive-question"><i class="fa-solid fa-circle-question text-warning me-1"></i> ${data.question}</div>
+                    <div class="d-flex flex-wrap justify-content-start mt-2">
+                        ${optionsHtml}
+                    </div>
+                `;
+            }
+        }
+
+        // تعبئة حقل الدرجة تلقائياً عند النقر على الخيارات المقترحة
+        function fillSuggestedProduct(val) {
+            document.getElementById('simProductName').value = val;
+            showRoyalNotification(`تم اختيار الدرجة: ${val} ✨`);
+        }
+
+        // تهيئة المساعد لأول مرة عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            updateInteractiveAssistant();
+        });
         
         // المحرك الصوتي المطور للقراءة (TTS)
         function speakText(text, btnElement) {
@@ -792,16 +920,38 @@
             if (!imgs.uB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
             const out = document.getElementById('simResponse'); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-wand-magic-sparkles fa-spin'></i> جاري ضبط مصفوفات النحت المعزز والواقع الافتراضي...</p>";
+            
+            let loadingMsg = "<p class='text-center gold-text'><i class='fa-solid fa-wand-magic-sparkles fa-spin'></i> جاري ضبط مصفوفات النحت المعزز والواقع الافتراضي...</p>";
+            if (!imgs.pB64) {
+                loadingMsg = "<p class='text-center gold-text'><i class='fa-solid fa-face-smile-beam fa-spin'></i> لم يتم رفع صورة منتج. جاري تفعيل رويال مايند لتحليل ملامحكِ وهالتكِ الوجدانية مع تقديم ترشيحات ذكية...</p>";
+            }
+            out.innerHTML = loadingMsg;
+
             try {
                 const mode = document.getElementById('masterMode').value;
+                const productName = document.getElementById('simProductName').value.trim();
+                
+                // تأمين صورة المنتج لمنع السيرفر من الانهيار (استخدام صورة 1x1 بكسل شفافة كبديل ذكي)
+                const safeProductImage = imgs.pB64 || "data:image/png;base64,iVBOR0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+                
+                // صياغة تعليق مخصص لنقله للسيرفر ليقوم بالتحليل المتعمق للشخصية والدرجة المطلوبة
+                let userCustomComment = `العميلة تطلب تطبيق الوضع التجميلي ${mode}`;
+                if (productName) {
+                    userCustomComment += ` باستخدام لون أو درجة أو طراز: ${productName}`;
+                }
+                if (!imgs.pB64) {
+                    userCustomComment += `. العميل لم يرفع صورة للمنتج، يرجى تقديم تحليل للشخصية والملامح والهالة البصرية والجمالية بناءً على السيلفي واقتراح حلول أو توصيات للمنتج والدرجة الأنسب.`;
+                }
+
                 const d = await apiFetch('/api/simulate_master', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         user_selfie: imgs.uB64, 
-                        product_image: imgs.pB64,
+                        product_image: safeProductImage,
                         makeup_type: mode, 
+                        hair_color: "#000000",
+                        user_comment: userCustomComment,
                         phone: localStorage.getItem('royal_user_phone') || "01000000000"
                     })
                 });
@@ -810,16 +960,16 @@
                         <div class="text-center mb-3">
                             <img src="${d.result_image}" class="img-fluid rounded border border-warning shadow" style="max-height: 280px;">
                         </div>
-                        <div id="simTextContainer" class="text-end p-2">${d.simulation_result}</div>
+                        <div id="simTextContainer" class="text-end p-2 fs-6" style="line-height: 1.8;">${d.simulation_result}</div>
                     `; 
                     const simTextContainer = document.getElementById('simTextContainer');
                     appendListenButton(simTextContainer, d.simulation_result);
                     renderVault(); 
                 } else {
-                    out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية. يرجى المحاولة بصورة أوضح.</p>";
+                    out.innerHTML = "<p class='text-danger'>فشلت المحاكاة الجمالية والتحليل الوجداني. يرجى المحاولة بصورة أوضح.</p>";
                 }
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الاتصال بم محرك الرسوميات.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات للتحليل الوجداني.</p>";
             }
         }
 
