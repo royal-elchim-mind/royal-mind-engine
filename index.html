@@ -231,11 +231,11 @@
 
                 <div class="row mb-3">
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">وجهكِ (Face ID)<input type="file" hidden accept="image/*" onchange="pre(this, 'hairUPre', 'hairUB64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">وجهكِ (Face ID)<input type="file" hidden accept="image/*" onchange="preHair(this, 'hairUPre', 'hairUB64')"></label>
                         <div id="hairUPre" class="preview-box"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">صورة القصة (Style)<input type="file" hidden accept="image/*" onchange="pre(this, 'hairPPre', 'hairPB64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">صورة القصة (Style)<input type="file" hidden accept="image/*" onchange="preHair(this, 'hairPPre', 'hairPB64')"></label>
                         <div id="hairPPre" class="preview-box"></div>
                     </div>
                 </div>
@@ -290,12 +290,17 @@
 
                 <div class="row mb-3">
                     <div class="col-6">
+                        <!-- تم التحديث لـ 9 اختيارات لتطابق مصفوفة الـ ZONES الملكية المحدثة بالسيرفر -->
                         <select id="masterMode" class="form-select fw-bold text-center border-warning">
                             <option value="lenses">💎 عدسات ملكية (تغيير بؤبؤ العين)</option>
                             <option value="lips">💄 أحمر شفاه مخملي ساطع</option>
                             <option value="eyeshadow">👁️ ظلال عيون سحرية</option>
-                            <option value="foundation">🎭 علاج ونحت خلايا البشرة</option>
                             <option value="blush">🌸 أحمر خدود (Blush)</option>
+                            <option value="foundation">🎭 علاج ونحت خلايا البشرة</option>
+                            <option value="concealer">🧴 خافي عيوب ذكي (Concealer)</option>
+                            <option value="highlighter">✨ إضاءة ملكية ثلاثية الأبعاد (Highlighter)</option>
+                            <option value="powder">❄️ بودرة تثبيت مخملية (Powder)</option>
+                            <option value="tint">🌹 تينت توريد طبيعي (Tint)</option>
                         </select>
                     </div>
                     <div class="col-6">
