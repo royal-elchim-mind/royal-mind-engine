@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -309,7 +310,7 @@
                         <div id="uPre" class="preview-box"></div>
                     </div>
                     <div class="col-6">
-                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">العدسة/الميكب<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
+                        <label class="btn btn-outline-warning w-100 p-2 fw-bold">المنتج / العدسة<input type="file" hidden accept="image/*" onchange="pre(this, 'pPre', 'pB64')"></label>
                         <div id="pPre" class="preview-box"></div>
                     </div>
                 </div>
@@ -332,36 +333,7 @@
             </div>
         </div>
 
-        <!-- 8. شاشة الفلسفة ورؤية البراند -->
-        <div id="screen-manifesto" class="app-screen">
-            <div class="glass-card text-end">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-gem"></i> فلسفة ورؤية رويال الكيم</h4>
-                <p class="text-center small text-warning mb-4" style="font-style: italic; font-weight: bold;">"نعمل على أن نصل إليكم، لنكون أقرب إليكِ من ظلكِ."</p>
-                
-                <div class="manifesto-badge">
-                    <h5><i class="fa-solid fa-bullseye gold-text"></i> هدفنا الأول: الوصول إليكِ</h5>
-                    <p class="small text-muted m-0 mt-2" style="line-height: 1.7;">لم نُصمم (رويال الكيم) لتكون مجرد مستحضرات تجميل تبحثين عنها في المتاجر، بل صُممت لتكسر حواجز المسافات وتصل هي إليكِ أينما كنتِ. نحن نؤمن أن الرعاية الحقيقية يجب أن تكون في متناول يدكِ وفي كل أوقاتكِ.</p>
-                </div>
-                
-                <div class="manifesto-badge">
-                    <h5><i class="fa-solid fa-handshake-angle gold-text"></i> الصديق دائم الوجود</h5>
-                    <p class="small text-muted m-0 mt-2" style="line-height: 1.7;">من هذا المنطلق، أوجدنا <b>(رويال مايند)</b>. لم يعد خبير التجميل أو صانع العطور بعيداً عنكِ؛ بل أصبح كياناً حياً يرافقكِ كصديق وفيّ ومستشار مخلص، يعيش معكِ لحظاتكِ، ويقدم لكِ الدعم الجمالي والوجداني في أي وقت تطلبينه.</p>
-                </div>
-
-                <div class="manifesto-badge">
-                    <h5><i class="fa-solid fa-leaf gold-text"></i> أبعد من مجرد مستحضرات</h5>
-                    <p class="small text-muted m-0 mt-2" style="line-height: 1.7;">أن نصل إليكم يعني أن نختصر عليكِ عناء التجارب. رويال مايند تتواجد معكِ اليوم لتحفظ ماضيكِ وتخطط لمستقبلكِ الجمالي، لتتألقي دائماً بنسختكِ الأروع بكل ثقة وطمأنينة.</p>
-                </div>
-
-                <div class="text-start mt-3">
-                    <button class="btn btn-sm btn-outline-warning fw-bold px-3 py-2" onclick="speakText('هدفنا الأول في رويال الكيم أن نصل إليكم. لم نصمم البراند ليكون مجرد مستحضرات، بل أوجدنا رويال مايند ليكون الصديق دائم الوجود والمستشار المخلص الذي يكسر المسافات ويرافقك أينما كنتِ.', this)">
-                        <i class="fa-solid fa-volume-high"></i> استمعي لرؤية البراند
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 9. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
+        <!-- 8. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
@@ -371,7 +343,7 @@
             </div>
         </div>
 
-        <!-- 10. شاشة بوابة الإدارة والنظام المحاسبي -->
+        <!-- 9. شاشة بوابة الإدارة والنظام المحاسبي -->
         <div id="screen-admin" class="app-screen">
             <div class="glass-card text-center py-5">
                 <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة المركزية والمحاسبة</h4>
@@ -389,14 +361,13 @@
         <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
         <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>بصري</span></div>
         <div class="nav-item" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
-        <div class="nav-item" onclick="switchTab('manifesto', this)"><i class="fa-solid fa-book-open-reader"></i><span>فلسفة</span></div>
         <div class="nav-item" onclick="switchTab('vault', this)"><i class="fa-solid fa-folder-open"></i><span>الذاكرة</span></div>
         <div class="nav-item" onclick="switchTab('admin', this)"><i class="fa-solid fa-user-gear"></i><span>الإدارة</span></div>
     </div>
 
     <script>
-        // دمج متغيرات الصور كلها في مكان واحد
-        let imgs = { uB64: null, pB64: null, hairUB64: null, hairPB64: null };
+        let imgs = { uB64: null, pB64: null };
+        let hairImgs = { hairUB64: null, hairPB64: null }; // متغيرات صور الشعر المنفصلة
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
@@ -488,27 +459,19 @@
             parentElement.appendChild(btn);
         }
 
-        // الرابط المباشر للسيرفر لتجنب خطأ URL
-        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space"; 
+        const BACKEND_URL = "https://royal-elchim-newmind-royal-mind-engine.hf.space";
 
         let mediaStream = null;
         let cameraPurpose = 'login'; 
 
         window.addEventListener('load', () => {
-            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
                 const secureUrl = window.location.href.replace('http://', 'https://');
                 askRoyalConfirmation(
                     "⚠️ تحذير أمان الكاميرا للهواتف",
                     "متصفحات الهواتف تمنع تشغيل الكاميرا والـ Face ID على الروابط غير الآمنة (HTTP). اضغطي تأكيد للانتقال للرابط المشفر."
                 ).then((confirmed) => {
                     if (confirmed) window.location.href = secureUrl;
-                });
-            }
-            
-            const colorPicker = document.getElementById('hairDyeColor');
-            if (colorPicker) {
-                colorPicker.addEventListener('input', function() {
-                    document.getElementById('colorHexDisplay').innerText = this.value.toUpperCase();
                 });
             }
         });
@@ -595,11 +558,23 @@
             if(id === 'vault') renderVault();
         }
 
+        // دالة الصور للمكياج والواقع المعزز
         function pre(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 imgs[key] = e.target.result;
+                document.getElementById(id).innerHTML = `<img src="${e.target.result}">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+        
+        // دالة الصور الخاصة بقسم الشعر
+        function preHair(input, id, key) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                hairImgs[key] = e.target.result;
                 document.getElementById(id).innerHTML = `<img src="${e.target.result}">`;
             };
             reader.readAsDataURL(input.files[0]);
@@ -768,12 +743,12 @@
         }
 
         async function runHairSim() {
-            if (!imgs.hairUB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
-            if (!imgs.hairPB64) return showRoyalNotification("يرجى رفع صورة لقصة الشعر المطلوبة للدمج.", "error");
+            if (!hairImgs.hairUB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
+            if (!hairImgs.hairPB64) return showRoyalNotification("يرجى رفع صورة لقصة الشعر المطلوبة للدمج.", "error");
             
             const out = document.getElementById('hairSimResponse'); 
             out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-scissors fa-spin'></i> جارٍ هندسة القصة ومزج الصبغة مع ملامحك...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-scissors fa-spin'></i> جارٍ هندسة القصة ومزج الصبغة مع ملامحك بدقة...</p>";
             
             try {
                 const dyeColor = document.getElementById('hairDyeColor').value;
@@ -783,8 +758,8 @@
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        user_selfie: imgs.hairUB64, 
-                        product_image: imgs.hairPB64,
+                        user_selfie: hairImgs.hairUB64, 
+                        product_image: hairImgs.hairPB64,
                         makeup_type: "hair_custom", 
                         hair_color: dyeColor,
                         user_comment: userComment,
@@ -797,7 +772,7 @@
                         <div class="text-center mb-3">
                             <img src="${d.result_image}" class="img-fluid rounded border border-warning shadow" style="max-height: 300px;">
                         </div>
-                        <div id="hairTextContainer" class="text-end p-2 fs-6" style="line-height: 1.8;">${d.simulation_result}</div>
+                        <div id="hairTextContainer" class="text-end p-3 fs-6" style="line-height: 1.8;">${d.simulation_result}</div>
                     `; 
                     const hairTextContainer = document.getElementById('hairTextContainer');
                     appendListenButton(hairTextContainer, d.simulation_result);
@@ -806,7 +781,7 @@
                     out.innerHTML = "<p class='text-danger'>فشلت محاكاة الشعر. يرجى المحاولة بصورة إضاءتها أوضح.</p>";
                 }
             } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات.</p>";
+                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمحرك الرسوميات الخاص بالشعر.</p>";
             }
         }
 
@@ -923,7 +898,7 @@
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
                         
-                        // ✅ إصلاح روابط الصور 
+                        // ✅ إصلاح روابط الصور (Mixed Content) لاستخدام https دائماً
                         if (i.selfie) i.selfie = i.selfie.replace('http://', 'https://');
                         if (i.product) i.product = i.product.replace('http://', 'https://');
 
