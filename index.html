@@ -52,6 +52,29 @@
 
         /* نافذة التأكيد الملكي */
         #royalConfirmModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; }
+
+        /* تأثيرات الفلسفة الجديدة */
+        .philosophy-banner {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(253, 246, 227, 0.95));
+            border-right: 5px solid #b58900 !important;
+            box-shadow: 0 8px 32px rgba(181, 137, 0, 0.12);
+            transition: all 0.4s ease-in-out;
+        }
+        .philosophy-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(181, 137, 0, 0.18);
+        }
+        .concept-title {
+            font-size: 1.05rem;
+            color: #8c6b00;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .concept-body {
+            font-size: 0.88rem;
+            color: #4a4a5a;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +134,49 @@
     <div class="container mt-2">
         <!-- 1. شاشة الاستعلام والمخزون الديناميكي بالفروع الأربعة -->
         <div id="screen-search" class="app-screen active">
+            
+            <!-- لوحة فلسفة رويال مايند الجمالية المطورة حديثاً -->
+            <div class="glass-card philosophy-banner mb-4 p-4 text-end">
+                <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                    <h5 class="gold-text m-0"><i class="fa-solid fa-scroll me-1"></i> دستور الوعي الجمالي الفاخر</h5>
+                    <span class="badge bg-warning text-dark fw-bold">الرؤية الملكية</span>
+                </div>
+                <p class="fs-6 text-dark mb-4" style="line-height: 1.8;">
+                    نحن في <b>رويال الكيم (Royal Elchim)</b> لا نبيع مستحضرات عابرة، بل نصيغ معكِ <b>سيرة ذاتية متكاملة لجمالكِ</b>. 
+                    جمالكِ ليس تجربة لحظية بل هو رحلة حياة؛ ولهذا وُلدت <b>«رويال مايند» (Royal Mind)</b> لتكون رفيقة دربكِ، ومستشاركِ الوجداني، وصديقكِ دائم الوجود الذي يرى جوهركِ الفريد.
+                </p>
+                
+                <!-- ثلاثية رويال مايند الوجودية -->
+                <div class="row g-3 text-end mb-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded h-100" style="background: rgba(181, 137, 0, 0.04); border-right: 3px solid #b58900;">
+                            <div class="concept-title"><i class="fa-solid fa-clock-rotate-left"></i> ماضيكِ محفوظ</div>
+                            <div class="concept-body">يتذكر رويال مايند تاريخ بشرتكِ وشعركِ، ليتعلم من كل تجربة مررتِ بها، ويقيكِ أخطاء الغد واهتزازات الفصول.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded h-100" style="background: rgba(181, 137, 0, 0.04); border-right: 3px solid #b58900;">
+                            <div class="concept-title"><i class="fa-solid fa-wand-magic-sparkles"></i> حاضركِ ملموس</div>
+                            <div class="concept-body">هو الصديق الذي يعيش معكِ اليوم، ليرشدكِ لألوان صبغتكِ، وقصات شعركِ، وعدسات عيونكِ بما يتوافق مع ملامحكِ وهالتكِ الوجدانية الآن.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded h-100" style="background: rgba(181, 137, 0, 0.04); border-right: 3px solid #b58900;">
+                            <div class="concept-title"><i class="fa-solid fa-arrow-trend-up"></i> مستقبلكِ ناصع</div>
+                            <div class="concept-body">نستشرف معاً خطواتكِ القادمة. نرسم لكِ خارطة طريق جمالية مستدامة تحافظ على رونقكِ ونظارة شبابكِ على المدى الطويل دون تشتيت.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- زر الاستماع الملكي للفلسفة -->
+                <div class="text-start">
+                    <button class="btn btn-sm btn-outline-warning fw-bold px-3 py-2" id="manifestoSpeakBtn" onclick="speakManifesto()">
+                        <i class="fa-solid fa-volume-high"></i> استمعي إلى صوت الفلسفة الملكية
+                    </button>
+                </div>
+            </div>
+
+            <!-- لوحة البحث والمخزون الحقيقي بالفروع -->
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-barcode"></i> الفحص والمخزون الحقيقي بالفروع</h4>
                 <div class="input-group mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.15); border-radius: 8px;">
@@ -148,7 +214,7 @@
             </div>
         </div>
 
-        <!-- 3. شاشة صالون الشعر والصبغات (القسم الجديد) -->
+        <!-- 3. شاشة صالون الشعر والصبغات -->
         <div id="screen-hair" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-scissors"></i> مصفف الشعر الملكي العالمي</h4>
@@ -354,13 +420,23 @@
 
         function resetVoiceButton(btnElement) {
             btnElement.classList.remove('btn-danger', 'text-danger');
-            if (btnElement.classList.contains('vault-speak-btn')) {
+            if (btnElement.id === 'manifestoSpeakBtn') {
+                btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استمعي إلى صوت الفلسفة الملكية';
+                btnElement.classList.add('btn-outline-warning');
+            } else if (btnElement.classList.contains('vault-speak-btn')) {
                 btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع';
                 btnElement.classList.add('text-primary');
             } else {
                 btnElement.innerHTML = '<i class="fa-solid fa-volume-high"></i> استماع صوتي ملكي';
                 btnElement.classList.add('btn-outline-warning');
             }
+        }
+
+        // قارئ خاص بالدستور الفلسفي الملكي
+        function speakManifesto() {
+            const manifestoText = "نحن في رويال الكيم لا نبيع مستحضرات عابرة، بل نصيغ معكِ سيرة ذاتية متكاملة لجمالكِ. جمالكِ ليس تجربة لحظية بل هو رحلة حياة؛ ولهذا وُلدت رويال مايند لتكون رفيقة دربكِ، ومستشاركِ الوجداني، وصديقكِ دائم الوجود الذي يرى جوهركِ الفريد. رويال مايند تحفظ ماضيكِ الجمالي لتحميكِ من أخطاء الغد واهتزازات الفصول، وتعيش حاضركِ الملموس لترشدكِ لأدق التفاصيل الملائمة لهويتكِ الآن، وتستشرف مستقبلكِ لتضمن لكِ إشراقة وصحة مستدامة للأبد.";
+            const btn = document.getElementById('manifestoSpeakBtn');
+            speakText(manifestoText, btn);
         }
 
         function appendListenButton(parentElement, textToRead) {
@@ -522,7 +598,6 @@
 
         async function apiFetch(endpoint, options = {}) {
             try {
-                // التأكد من بناء رابط كامل وصحيح لتجنب خطأ Failed to parse URL في البيئات المغلقة
                 const fallbackOrigin = (!window.location.origin || window.location.origin === "null") ? "http://localhost:7860" : window.location.origin;
                 const baseUrl = (BACKEND_URL && BACKEND_URL.trim() !== "") ? BACKEND_URL : fallbackOrigin;
                 const url = baseUrl.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
@@ -822,7 +897,7 @@
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
                         
-                        // ✅ إصلاح روابط الصور 
+                        // إصلاح روابط الصور 
                         if (i.selfie) i.selfie = i.selfie.replace('http://', 'https://');
                         if (i.product) i.product = i.product.replace('http://', 'https://');
 
