@@ -352,7 +352,7 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي المحدث ليشمل الخبراء -->
+    <!-- شريط التنقل السفلي -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></div>
@@ -374,7 +374,6 @@
         let confirmPromiseResolver = null;
         let currentUtterance = null;
         
-        // استخدام مسار محلي بدلاً من تثبيت الرابط ليعمل على أي دومين
         const BACKEND_URL = ""; 
 
         function speakText(text, btnElement) {
@@ -651,7 +650,6 @@
             } catch (e) { showRoyalNotification("خطأ في الاتصال بالفوترة.", "error"); }
         }
 
-        // --- دالة طلب الاستشارة من مجلس الخبراء الجديد ---
         async function runExpertConsultation() {
             const expertType = document.getElementById('expertType').value;
             const inputVal = document.getElementById('expertInput').value.trim();
@@ -804,6 +802,14 @@
             } catch (err) { showRoyalNotification("فشل الوصول للكاميرا.", "error"); closeCamera(); }
         }
 
+        function openCameraForLogin() {
+            openCamera('تسجيل الدخول البصري', 'login');
+        }
+
+        function openCameraForRegistration() {
+            openCamera('توثيق بصمة الوجه', 'register');
+        }
+
         function closeCamera() {
             if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
             document.getElementById('cameraModal').style.display = 'none';
@@ -841,7 +847,7 @@
             }
         }
 
-        // إرسال بيانات الـ CSV كـ JSON نصي لتخطي حاجة السيرفر لـ python-multipart نهائياً
+        // إرسال بيانات الـ CSV كـ JSON نصي لتخطي حاجة السيرفر لـ python-multipart أو أي مشكلة تشفير
         function uploadCSV() {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files || fileInput.files.length === 0) return showRoyalNotification("اختر ملف CSV أولاً.", "error");
@@ -849,11 +855,12 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
             const out = document.getElementById('uploadRes'); 
-            out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري قراءة الملف وتشفيره...</span>";
+            out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري قراءة الملف...</span>";
             
             reader.onload = async function(e) {
+                // نرسله كـ Base64 لكي لا تتدمر الحروف العربية في الطريق
                 const b64 = e.target.result;
-                out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري إرسال البيانات للمحرك...</span>";
+                out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري إرسال البيانات الملكية...</span>";
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/upload_inventory`, { 
                         method: 'POST', 
@@ -872,9 +879,11 @@
                 }
             };
             reader.onerror = function() {
-                out.innerHTML = "<span class='text-danger'>فشل في قراءة ملف الجرد.</span>";
+                out.innerHTML = "<span class='text-danger'>فشل في قراءة ملف الجرد المحلي.</span>";
             };
-            reader.readAsDataURL(file); // قراءة الملف كـ Base64 لضمان سلامة التشفير العربي
+            
+            // قراءة الملف بصيغة Data URL لضمان عدم ضياع التشفير
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
