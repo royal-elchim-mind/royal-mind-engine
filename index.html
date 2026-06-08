@@ -352,7 +352,7 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي -->
+    <!-- شريط التنقل السفلي المحدث ليشمل الخبراء -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></div>
@@ -374,6 +374,7 @@
         let confirmPromiseResolver = null;
         let currentUtterance = null;
         
+        // استخدام مسار محلي بدلاً من تثبيت الرابط ليعمل على أي دومين
         const BACKEND_URL = ""; 
 
         function speakText(text, btnElement) {
@@ -650,6 +651,7 @@
             } catch (e) { showRoyalNotification("خطأ في الاتصال بالفوترة.", "error"); }
         }
 
+        // --- دالة طلب الاستشارة من مجلس الخبراء الجديد ---
         async function runExpertConsultation() {
             const expertType = document.getElementById('expertType').value;
             const inputVal = document.getElementById('expertInput').value.trim();
@@ -847,16 +849,16 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
             const out = document.getElementById('uploadRes'); 
-            out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري قراءة الملف...</span>";
+            out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري قراءة الملف وتشفيره...</span>";
             
             reader.onload = async function(e) {
-                const text = e.target.result;
-                out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري إرسال البيانات الملكية...</span>";
+                const b64 = e.target.result;
+                out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري إرسال البيانات للمحرك...</span>";
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/upload_inventory`, { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ csv_data: text }) 
+                        body: JSON.stringify({ csv_data: b64 }) 
                     });
                     const d = await response.json();
                     if (d.status === 'success') { 
@@ -870,9 +872,9 @@
                 }
             };
             reader.onerror = function() {
-                out.innerHTML = "<span class='text-danger'>فشل في قراءة ملف الجرد المحلي.</span>";
+                out.innerHTML = "<span class='text-danger'>فشل في قراءة ملف الجرد.</span>";
             };
-            reader.readAsText(file);
+            reader.readAsDataURL(file); // قراءة الملف كـ Base64 لضمان سلامة التشفير العربي
         }
     </script>
 </body>
