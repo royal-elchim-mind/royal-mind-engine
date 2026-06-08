@@ -186,7 +186,7 @@
             </div>
         </div>
 
-        <!-- 3. شاشة مجلس الخبراء V4 (جديدة) -->
+        <!-- 3. شاشة مجلس الخبراء V4 -->
         <div id="screen-experts" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-user-tie"></i> مجلس خبراء رويال الكيم</h4>
@@ -352,7 +352,7 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي المحدث ليشمل الخبراء -->
+    <!-- شريط التنقل السفلي -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('search', this)"><i class="fa-solid fa-barcode"></i><span>استعلام</span></div>
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></div>
@@ -374,7 +374,6 @@
         let confirmPromiseResolver = null;
         let currentUtterance = null;
         
-        // استخدام مسار محلي بدلاً من تثبيت الرابط ليعمل على أي دومين
         const BACKEND_URL = ""; 
 
         function speakText(text, btnElement) {
@@ -651,7 +650,6 @@
             } catch (e) { showRoyalNotification("خطأ في الاتصال بالفوترة.", "error"); }
         }
 
-        // --- دالة طلب الاستشارة من مجلس الخبراء الجديد ---
         async function runExpertConsultation() {
             const expertType = document.getElementById('expertType').value;
             const inputVal = document.getElementById('expertInput').value.trim();
@@ -841,17 +839,40 @@
             }
         }
 
-        async function uploadCSV() {
+        // إرسال بيانات الـ CSV كـ JSON نصي لتخطي حاجة السيرفر لـ python-multipart نهائياً
+        function uploadCSV() {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files || fileInput.files.length === 0) return showRoyalNotification("اختر ملف CSV أولاً.", "error");
-            const formData = new FormData(); formData.append("file", fileInput.files[0]);
-            const out = document.getElementById('uploadRes'); out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري استلام البيانات...</span>";
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/upload_inventory`, { method: 'POST', body: formData });
-                const d = await response.json();
-                if (d.status === 'success') { out.innerHTML = `<span class='text-success'>${d.message}</span>`; showRoyalNotification(d.message); } 
-                else out.innerHTML = `<span class='text-danger'>${d.message}</span>`;
-            } catch (e) { out.innerHTML = "<span class='text-danger'>حدث خطأ أثناء الرفع.</span>"; }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            const out = document.getElementById('uploadRes'); 
+            out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري قراءة الملف...</span>";
+            
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                out.innerHTML = "<span class='text-warning'><i class='fa-solid fa-spinner fa-spin'></i> جاري إرسال البيانات الملكية...</span>";
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/upload_inventory`, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ csv_data: text }) 
+                    });
+                    const d = await response.json();
+                    if (d.status === 'success') { 
+                        out.innerHTML = `<span class='text-success'>${d.message}</span>`; 
+                        showRoyalNotification(d.message); 
+                    } else {
+                        out.innerHTML = `<span class='text-danger'>${d.message}</span>`; 
+                    }
+                } catch (err) {
+                    out.innerHTML = "<span class='text-danger'>حدث خطأ أثناء الرفع للسيرفر.</span>"; 
+                }
+            };
+            reader.onerror = function() {
+                out.innerHTML = "<span class='text-danger'>فشل في قراءة ملف الجرد المحلي.</span>";
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
