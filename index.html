@@ -336,7 +336,31 @@
             </div>
         </div>
 
-        <!-- 8. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
+        <!-- 8. شاشة مجلس الخبراء الملكي (الجديدة V4) -->
+        <div id="screen-experts" class="app-screen">
+            <div class="glass-card">
+                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-users-viewfinder"></i> مجلس الخبراء الملكي</h4>
+                <p class="text-muted small text-center mb-4">اختاري مستشاركِ الخاص للحصول على تحليل علمي دقيق وبروتوكول متكامل مصمم لكِ خصيصاً.</p>
+
+                <select id="expertTypeSelect" class="form-select fw-bold text-center border-warning mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.1);">
+                    <option value="skin_doctor">🩺 طبيبة الجلدية والعناية الطبية</option>
+                    <option value="fashion_stylist">👗 منسقة الأزياء والمظهر</option>
+                    <option value="color_analyst">🎨 خبيرة الألوان الموسمية (Color Analysis)</option>
+                    <option value="image_consultant">💎 مستشارة الصورة الشخصية الشاملة</option>
+                    <option value="luxury_sales">🛍️ خبيرة الاستثمار الجمالي</option>
+                </select>
+
+                <div class="position-relative mb-4">
+                    <textarea id="expertInput" class="form-control text-end" rows="4" placeholder="صفي تفاصيل حالتكِ، استفساركِ، أو المشكلة التي تواجهينها ليتم تحليلها..." style="padding-left: 55px;"></textarea>
+                    <button class="mic-btn" onclick="startVoiceRecognition('expertInput', this)"><i class="fa-solid fa-microphone"></i></button>
+                </div>
+                
+                <button class="gold-btn w-100 py-2" onclick="runExpertConsultation()">طلب الاستشارة الملكية <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <div id="expertResponse" class="royal-response text-end" style="display:none; background:white; line-height: 1.9;"></div>
+            </div>
+        </div>
+
+        <!-- 9. شاشة الذاكرة التراكمية وسجلات الوعي المركزية -->
         <div id="screen-vault" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-book-journal-whills"></i> سجلات الوعي والذاكرة المركزية</h4>
@@ -346,7 +370,7 @@
             </div>
         </div>
 
-        <!-- 9. شاشة بوابة الإدارة والنظام المحاسبي -->
+        <!-- 10. شاشة بوابة الإدارة والنظام المحاسبي -->
         <div id="screen-admin" class="app-screen">
             <div class="glass-card text-center py-5">
                 <h4 class="gold-text mb-4"><i class="fa-solid fa-user-gear"></i> بوابة الإدارة المركزية والمحاسبة</h4>
@@ -363,6 +387,7 @@
         <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
         <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
         <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>بصري</span></div>
+        <div class="nav-item" onclick="switchTab('experts', this)"><i class="fa-solid fa-user-tie"></i><span>الخبراء</span></div>
         <div class="nav-item" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
         <div class="nav-item" onclick="switchTab('vault', this)"><i class="fa-solid fa-folder-open"></i><span>الذاكرة</span></div>
         <div class="nav-item" onclick="switchTab('admin', this)"><i class="fa-solid fa-user-gear"></i><span>الإدارة</span></div>
@@ -370,14 +395,13 @@
 
     <script>
         let imgs = { uB64: null, pB64: null };
-        let hairImgs = { hairUB64: null, hairPB64: null }; // متغيرات صور الشعر المنفصلة
+        let hairImgs = { hairUB64: null, hairPB64: null };
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
         let searchResultsCached = []; 
         let currentUtterance = null;
         
-        // المحرك الصوتي المطور للقراءة (TTS)
         function speakText(text, btnElement) {
             if (!text) return;
             if (window.speechSynthesis.speaking) {
@@ -436,7 +460,6 @@
             }
         }
 
-        // قارئ خاص بالدستور الفلسفي الملكي
         function speakManifesto() {
             const manifestoText = "نحن في رويال الكيم لسنا مجرد شركة لمستحضرات التجميل، بل هدفنا الأول هو الوصول إليكِ. عبر رويال مايند، نتواجد معكِ كصديق دائم الوجود. الجمال تطور مستمر، ورويال مايند هو صديقك الناصح الذي يرى ماضيكِ، ويعيش معكِ الآن، ويتطلع إلى رؤياكِ غداً ليحققها معكِ.";
             const btn = document.getElementById('manifestoSpeakBtn');
@@ -561,7 +584,6 @@
             if(id === 'vault') renderVault();
         }
 
-        // دالة الصور للمكياج والواقع المعزز
         function pre(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
@@ -572,7 +594,6 @@
             reader.readAsDataURL(input.files[0]);
         }
         
-        // دالة الصور الخاصة بقسم الشعر
         function preHair(input, id, key) {
             if (!input.files || !input.files[0]) return;
             const reader = new FileReader();
@@ -880,15 +901,54 @@
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ 
+                        expert_type: "makeup_artist",
                         client_message: `الفئة: ${cat} | المشكلة: ${inputVal}`, 
                         phone: localStorage.getItem('royal_user_phone') 
                     })
                 });
-                out.innerHTML = d.diagnosis; 
+                
+                let formattedText = d.diagnosis
+                    .replace(/\*\*(.*?)\*\*/g, '<b class="gold-text">$1</b>')
+                    .replace(/\[(.*?)\]/g, '<div class="badge bg-warning text-dark mb-2 mt-3 fs-6 p-2 d-inline-block border border-dark"><i class="fa-solid fa-crown me-1"></i> $1</div><br>');
+                
+                out.innerHTML = formattedText; 
                 appendListenButton(out, d.diagnosis);
                 renderVault();
             } catch(e) {
                 out.innerHTML = "<p class='text-danger'>فشل محرك التحليل الجمالي.</p>";
+            }
+        }
+
+        async function runExpertConsultation() {
+            const inputVal = document.getElementById('expertInput').value.trim();
+            const expertType = document.getElementById('expertTypeSelect').value;
+
+            if(!inputVal) return showRoyalNotification("يرجى كتابة أو التحدث بتفاصيل استشارتك أولاً.", "error");
+
+            const out = document.getElementById('expertResponse');
+            out.style.display = 'block';
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> الخبير الملكي يقوم بدراسة وتحليل معطياتكِ...</p>";
+
+            try {
+                const d = await apiFetch('/api/diagnose', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        expert_type: expertType,
+                        client_message: inputVal,
+                        phone: localStorage.getItem('royal_user_phone')
+                    })
+                });
+
+                let formattedText = d.diagnosis
+                    .replace(/\*\*(.*?)\*\*/g, '<b class="gold-text">$1</b>')
+                    .replace(/\[(.*?)\]/g, '<div class="badge bg-warning text-dark mb-2 mt-3 fs-6 p-2 d-inline-block border border-dark"><i class="fa-solid fa-gem me-1"></i> $1</div><br>');
+
+                out.innerHTML = formattedText;
+                appendListenButton(out, d.diagnosis); 
+                renderVault();
+            } catch(e) {
+                out.innerHTML = "<p class='text-danger'>فشل الاتصال بمجلس الخبراء. يرجى المحاولة لاحقاً.</p>";
             }
         }
 
@@ -901,7 +961,6 @@
                     document.getElementById('vaultRes').innerHTML = d.data.map((i, index) => {
                         let imagesHtml = '';
                         
-                        // ✅ إصلاح روابط الصور (Mixed Content) لاستخدام https دائماً
                         if (i.selfie) i.selfie = i.selfie.replace('http://', 'https://');
                         if (i.product) i.product = i.product.replace('http://', 'https://');
 
