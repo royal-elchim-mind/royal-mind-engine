@@ -263,19 +263,6 @@
             </div>
         </div>
 
-        <!-- 5. شاشة مستشار المكياج والعلاج البصري -->
-        <div id="screen-makeup" class="app-screen">
-            <div class="glass-card">
-                <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-paintbrush"></i> استشارات الميكب العلاجي والتجميلي</h4>
-                <div class="position-relative mb-4">
-                    <textarea id="makeupInput" class="form-control text-end" rows="3" placeholder="صفي المشكلة العلاجية لبشرتكِ أو لوك مكياجكِ المفضّل..." style="padding-left: 55px;"></textarea>
-                    <button class="mic-btn" onclick="startVoiceRecognition('makeupInput', this)"><i class="fa-solid fa-microphone"></i></button>
-                </div>
-                <button class="gold-btn w-100 py-2" onclick="runChat('makeup', 'makeupInput', 'makeupResponse')">استخلاص البروتوكول الجمالي</button>
-                <div id="makeupResponse" class="royal-response" style="display:none; background:white;"></div>
-            </div>
-        </div>
-
         <!-- 6. شاشة الواقع المعزز ومختبر النحت البصري ومسح الـ Face ID -->
         <div id="screen-simulation" class="app-screen">
             <div class="glass-card">
@@ -340,9 +327,10 @@
         <div id="screen-experts" class="app-screen">
             <div class="glass-card">
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-users-viewfinder"></i> مجلس الخبراء الملكي</h4>
-                <p class="text-muted small text-center mb-4">اختاري مستشاركِ الخاص للحصول على تحليل علمي دقيق وبروتوكول متكامل مصمم لكِ خصيصاً.</p>
+                <p class="text-muted small text-center mb-4">ارفعي صورتكِ واختاري مستشاركِ الخاص للحصول على تحليل علمي دقيق وبروتوكول مصمم لكِ.</p>
 
-                <select id="expertTypeSelect" class="form-select fw-bold text-center border-warning mb-4" style="box-shadow: 0 4px 15px rgba(181,137,0,0.1);">
+                <select id="expertTypeSelect" class="form-select fw-bold text-center border-warning mb-3" style="box-shadow: 0 4px 15px rgba(181,137,0,0.1);">
+                    <option value="makeup_artist">💄 مديرة التجميل (تحليل الملامح والميكب)</option>
                     <option value="skin_doctor">🩺 طبيبة الجلدية والعناية الطبية</option>
                     <option value="fashion_stylist">👗 منسقة الأزياء والمظهر</option>
                     <option value="color_analyst">🎨 خبيرة الألوان الموسمية (Color Analysis)</option>
@@ -350,8 +338,13 @@
                     <option value="luxury_sales">🛍️ خبيرة الاستثمار الجمالي</option>
                 </select>
 
+                <div class="mb-3">
+                    <label class="btn btn-outline-warning w-100 p-2 fw-bold"><i class="fa-solid fa-camera"></i> أرفقي صورتكِ هنا للتحليل<input type="file" hidden accept="image/*" onchange="preExpert(this)"></label>
+                    <div id="expertPre" class="preview-box mt-2" style="display:none;"></div>
+                </div>
+
                 <div class="position-relative mb-4">
-                    <textarea id="expertInput" class="form-control text-end" rows="4" placeholder="صفي تفاصيل حالتكِ، استفساركِ، أو المشكلة التي تواجهينها ليتم تحليلها..." style="padding-left: 55px;"></textarea>
+                    <textarea id="expertInput" class="form-control text-end" rows="3" placeholder="صفي تفاصيل استفساركِ، أو المشكلة التي تواجهينها..." style="padding-left: 55px;"></textarea>
                     <button class="mic-btn" onclick="startVoiceRecognition('expertInput', this)"><i class="fa-solid fa-microphone"></i></button>
                 </div>
                 
@@ -385,7 +378,6 @@
         <div class="nav-item" onclick="switchTab('b2b', this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>الفواتير</span></div>
         <div class="nav-item" onclick="switchTab('hair', this)"><i class="fa-solid fa-scissors"></i><span>الشعر</span></div>
         <div class="nav-item" onclick="switchTab('perfume', this)"><i class="fa-solid fa-spray-can"></i><span>عطور</span></div>
-        <div class="nav-item" onclick="switchTab('makeup', this)"><i class="fa-solid fa-paintbrush"></i><span>مكياج</span></div>
         <div class="nav-item" onclick="switchTab('simulation', this)"><i class="fa-solid fa-camera-retro"></i><span>بصري</span></div>
         <div class="nav-item" onclick="switchTab('experts', this)"><i class="fa-solid fa-user-tie"></i><span>الخبراء</span></div>
         <div class="nav-item" onclick="switchTab('diagnosis', this)"><i class="fa-solid fa-infinity"></i><span>للأبد</span></div>
@@ -396,6 +388,7 @@
     <script>
         let imgs = { uB64: null, pB64: null };
         let hairImgs = { hairUB64: null, hairPB64: null };
+        let expertImgB64 = null; // متغير لحفظ صورة الخبراء
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
@@ -600,6 +593,18 @@
             reader.onload = (e) => {
                 hairImgs[key] = e.target.result;
                 document.getElementById(id).innerHTML = `<img src="${e.target.result}">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        function preExpert(input) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                expertImgB64 = e.target.result;
+                const preBox = document.getElementById('expertPre');
+                preBox.style.display = 'flex';
+                preBox.innerHTML = `<img src="${e.target.result}">`;
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -890,44 +895,15 @@
             }
         }
 
-        async function runChat(cat, inpId, outId) {
-            const inputVal = document.getElementById(inpId).value.trim();
-            if(!inputVal) return showRoyalNotification("يرجى كتابة التفاصيل أولاً.", "error");
-            const out = document.getElementById(outId); 
-            out.style.display = 'block'; 
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-compass fa-spin'></i> جارٍ استخلاص البروتوكول الجمالي ونحت الملامح...</p>";
-            try {
-                const d = await apiFetch('/api/diagnose', {
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        expert_type: "makeup_artist",
-                        client_message: `الفئة: ${cat} | المشكلة: ${inputVal}`, 
-                        phone: localStorage.getItem('royal_user_phone') 
-                    })
-                });
-                
-                let formattedText = d.diagnosis
-                    .replace(/\*\*(.*?)\*\*/g, '<b class="gold-text">$1</b>')
-                    .replace(/\[(.*?)\]/g, '<div class="badge bg-warning text-dark mb-2 mt-3 fs-6 p-2 d-inline-block border border-dark"><i class="fa-solid fa-crown me-1"></i> $1</div><br>');
-                
-                out.innerHTML = formattedText; 
-                appendListenButton(out, d.diagnosis);
-                renderVault();
-            } catch(e) {
-                out.innerHTML = "<p class='text-danger'>فشل محرك التحليل الجمالي.</p>";
-            }
-        }
-
         async function runExpertConsultation() {
             const inputVal = document.getElementById('expertInput').value.trim();
             const expertType = document.getElementById('expertTypeSelect').value;
 
-            if(!inputVal) return showRoyalNotification("يرجى كتابة أو التحدث بتفاصيل استشارتك أولاً.", "error");
+            if(!inputVal && !expertImgB64) return showRoyalNotification("يرجى كتابة استشارتكِ أو إرفاق صورة على الأقل.", "error");
 
             const out = document.getElementById('expertResponse');
             out.style.display = 'block';
-            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> الخبير الملكي يقوم بدراسة وتحليل معطياتكِ...</p>";
+            out.innerHTML = "<p class='text-center gold-text'><i class='fa-solid fa-circle-notch fa-spin'></i> الخبير الملكي يحلل ملامحكِ ويدرس معطياتكِ...</p>";
 
             try {
                 const d = await apiFetch('/api/diagnose', {
@@ -935,7 +911,8 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         expert_type: expertType,
-                        client_message: inputVal,
+                        client_message: inputVal || "أرجو تحليل صورتي.",
+                        selfie_b64: expertImgB64, // إرسال الصورة للسيرفر
                         phone: localStorage.getItem('royal_user_phone')
                     })
                 });
