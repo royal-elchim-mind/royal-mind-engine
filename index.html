@@ -75,6 +75,44 @@
             color: #4a4a5a;
             line-height: 1.6;
         }
+
+        /* لوحة ألوان صبغات الشعر الملكية */
+        .hair-palette-container { 
+            display: flex; 
+            overflow-x: auto; 
+            gap: 12px; 
+            padding: 10px 5px; 
+            scrollbar-width: none; 
+        }
+        .hair-palette-container::-webkit-scrollbar { display: none; }
+        .color-swatch { 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: 3px solid #eee; 
+            flex-shrink: 0; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.active { 
+            border: 3px solid #b58900; 
+            transform: scale(1.15); 
+            box-shadow: 0 0 15px rgba(181,137,0,0.6); 
+        }
+        .color-swatch.active::after {
+            content: '\f00c';
+            font-family: 'FontAwesome';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -219,13 +257,38 @@
                 <h4 class="gold-text mb-3 text-center"><i class="fa-solid fa-scissors"></i> مصفف الشعر الملكي العالمي</h4>
                 <p class="text-muted small text-center mb-4">اكتشفي أحدث القصات العالمية وجربي ألوان الصبغات مباشرة لتري كيف تبرز جمال ملامحك.</p>
                 
-                <div class="row mb-3 align-items-center">
-                    <div class="col-8">
-                        <label class="form-label small fw-bold text-dark">اختر لون الصبغة:</label>
-                        <input type="color" id="hairDyeColor" class="form-control form-control-color w-100 border-warning" value="#8B4513" title="اختر لون الصبغة">
+                <!-- قسم اختيار صبغة الشعر الملكية -->
+                <div class="mb-4 text-center">
+                    <label class="form-label small fw-bold text-dark d-block text-end"><i class="fa-solid fa-palette text-warning"></i> كتالوج الصبغات الملكية (اختياري):</label>
+                    
+                    <div class="hair-palette-container" dir="ltr">
+                        <!-- درجات الأشقر -->
+                        <div class="color-swatch" style="background-color: #FAF0BE;" onclick="selectHairDye('#FAF0BE', 'أشقر بلاتيني', this)" title="أشقر بلاتيني"></div>
+                        <div class="color-swatch" style="background-color: #E8C396;" onclick="selectHairDye('#E8C396', 'أشقر رمادي', this)" title="أشقر رمادي"></div>
+                        <div class="color-swatch" style="background-color: #D4AF37;" onclick="selectHairDye('#D4AF37', 'أشقر ذهبي', this)" title="أشقر ذهبي"></div>
+                        <div class="color-swatch" style="background-color: #B8977E;" onclick="selectHairDye('#B8977E', 'أشقر غامق', this)" title="أشقر غامق"></div>
+                        
+                        <!-- درجات البني -->
+                        <div class="color-swatch" style="background-color: #654321;" onclick="selectHairDye('#654321', 'بني داكن', this)" title="بني داكن"></div>
+                        <div class="color-swatch" style="background-color: #4B3621;" onclick="selectHairDye('#4B3621', 'بني شوكولاتة', this)" title="بني شوكولاتة"></div>
+                        <div class="color-swatch" style="background-color: #3D2314;" onclick="selectHairDye('#3D2314', 'بني كستنائي', this)" title="بني كستنائي"></div>
+                        
+                        <!-- درجات الأحمر -->
+                        <div class="color-swatch" style="background-color: #C44E31;" onclick="selectHairDye('#C44E31', 'أحمر نحاسي', this)" title="أحمر نحاسي"></div>
+                        <div class="color-swatch" style="background-color: #9E331F;" onclick="selectHairDye('#9E331F', 'أحمر ماهوجني', this)" title="أحمر ماهوجني"></div>
+                        <div class="color-swatch" style="background-color: #8B0000;" onclick="selectHairDye('#8B0000', 'أحمر عنابي (Burgundy)', this)" title="أحمر عنابي"></div>
+                        
+                        <!-- درجات الأسود والألوان الجريئة -->
+                        <div class="color-swatch" style="background-color: #0f0f0f;" onclick="selectHairDye('#0f0f0f', 'أسود ليلي', this)" title="أسود ليلي"></div>
+                        <div class="color-swatch" style="background-color: #6A0DAD;" onclick="selectHairDye('#6A0DAD', 'بنفسجي ملكي', this)" title="بنفسجي ملكي"></div>
                     </div>
-                    <div class="col-4 text-center">
-                        <span class="small text-muted d-block mt-2" id="colorHexDisplay">#8B4513</span>
+                    
+                    <!-- حقل مخفي لتخزين اللون المختار للسيرفر -->
+                    <input type="hidden" id="hairDyeColor" value="">
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-2 px-2 bg-light rounded p-2 border">
+                        <span id="selectedDyeLabel" class="small fw-bold text-secondary">بدون صبغة (لون شعرك الطبيعي)</span>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="clearHairDye()" title="إلغاء الصبغة"><i class="fa-solid fa-eraser"></i> مسح</button>
                     </div>
                 </div>
 
@@ -245,7 +308,8 @@
                     <button class="mic-btn" style="bottom: 5px;" onclick="startVoiceRecognition('hairCommentInput', this)"><i class="fa-solid fa-microphone"></i></button>
                 </div>
 
-                <button class="gold-btn w-100 py-2" onclick="runHairSim()">دمج القصة واللون واستخراج التحليل <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <!-- تم تغيير اسم الزر ليعبر عن الاحترافية والذكاء الاصطناعي -->
+                <button class="gold-btn w-100 py-2" onclick="runHairSim()">تلوين الشعر (AR) وتحليل القصة بالذكاء الاصطناعي <i class="fa-solid fa-wand-magic-sparkles"></i></button>
                 <div id="hairSimResponse" class="royal-response" style="display:none; background:white;"></div>
             </div>
         </div>
@@ -388,7 +452,7 @@
     <script>
         let imgs = { uB64: null, pB64: null };
         let hairImgs = { hairUB64: null, hairPB64: null };
-        let expertImgB64 = null; // متغير لحفظ صورة الخبراء
+        let expertImgB64 = null; 
         let activeInvoiceItems = [];
         let searchTimer = null;
         let confirmPromiseResolver = null;
@@ -773,7 +837,9 @@
 
         async function runHairSim() {
             if (!hairImgs.hairUB64) return showRoyalNotification("يرجى التقاط أو رفع صورة وجهكِ سيلفي أولاً.", "error");
-            if (!hairImgs.hairPB64) return showRoyalNotification("يرجى رفع صورة لقصة الشعر المطلوبة للدمج.", "error");
+            if (!hairImgs.hairPB64 && document.getElementById('hairDyeColor').value === "") {
+                 return showRoyalNotification("يرجى اختيار لون من الكتالوج أو رفع صورة لقصة الشعر.", "error");
+            }
             
             const out = document.getElementById('hairSimResponse'); 
             out.style.display = 'block'; 
@@ -1141,6 +1207,24 @@
                     showRoyalNotification("خطأ في إرسال هندسة الملامح الملكية.", "error");
                 }
             }
+        }
+
+        // دوال التحكم في كتالوج صبغات الشعر
+        function selectHairDye(hexCode, colorName, element) {
+            // إزالة التحديد من كل الألوان
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            // إضافة التحديد للون المختار
+            element.classList.add('active');
+            
+            // تحديث الحقل المخفي والعنوان الظاهر
+            document.getElementById('hairDyeColor').value = hexCode;
+            document.getElementById('selectedDyeLabel').innerHTML = `اللون المختار: <span class="gold-text fw-bold">${colorName}</span>`;
+        }
+
+        function clearHairDye() {
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            document.getElementById('hairDyeColor').value = ""; // تفريغ اللون
+            document.getElementById('selectedDyeLabel').innerHTML = "بدون صبغة (لون شعرك الطبيعي)";
         }
     </script>
 </body>
